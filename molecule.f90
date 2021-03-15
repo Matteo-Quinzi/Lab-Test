@@ -52,4 +52,7 @@ PROGRAM molecule
         CLOSE(io_unit)
     END IF
     !
+    !TASK B
+    !
+    
 END PROGRAM molecule
