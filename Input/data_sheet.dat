@@ -1,0 +1,21 @@
+### INITIAL PARAMETERS - INTERVAL [a,b] ###
+ a            b        N
+0.           17.5      4999
+
+### POTENTIAL ###
+# HARMONIC
+k
+1.
+
+# MORSE
+D_e         alpha        x0
+50.          0.5         2.5
+
+### WAVE VECTORS ###
+d
+51
+
+
+
+
+
