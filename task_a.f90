@@ -58,10 +58,10 @@ MODULE TASK_A
                         REAL(KIND=8) :: W(N), Z(N,N)                   ! Eigenvalues and eigenvectors array
 
                         CHARACTER(LEN=15) :: fmt
+                        REAL(KIND=8) :: dx
                         
                         CALL HAMILTONIAN(x, V, N, d, e)   ! builds the tridiagonal Hamiltonian 
                         
-
                         ! EIGENVALUES CALCULUS
 
                         IF (PRESENT(eigval_only)) THEN
@@ -76,6 +76,9 @@ MODULE TASK_A
                                     W, Z, N, ISUPPZ, WORK, 20*N, IWORK, 10*N, INFO)
                         CALL CPU_TIME(t_end)
 
+                        dx = x(2) - x(1)
+                        Z(:,:) = Z(:,:) * dx**(-0.5)
+                        
                         IF (INFO==0) THEN
                                 PRINT '(A, I0, A, F15.7, A)', 'Found ', M, ' eigenvalues in', t_end - t_start, ' seconds'
 
