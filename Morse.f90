@@ -4,8 +4,8 @@ PROGRAM MAIN
 
         USE potential   ! defines the potential function
         
-        USE task_a     ! the computation is performed in the coordinates space
-        !USE task_b    ! the computation is performed in the reciprocal space
+        !USE task_a     ! the computation is performed in the coordinates space
+        USE task_b    ! the computation is performed in the reciprocal space
         
         !! VARIABLE DECLARATIONS       
 
