@@ -70,7 +70,7 @@ MODULE TASK_B
 
                 END FUNCTION HAMILTONIAN
           
-                SUBROUTINE SOLVE_EIGH(x, N, V, eigval_only, eigh_range, IL, IU, VL, VU, store)
+                SUBROUTINE SOLVE_EIGH_K(x, N, V, eigval_only, eigh_range, IL, IU, VL, VU, store)
                         ! Computes the eigenvalues and the eigenvectors of an
                         ! upper triangle hermitian matrix H by calling the LAPACK 
                         ! routine ZHEEVX (http://www.netlib.org/lapack)
@@ -155,7 +155,7 @@ MODULE TASK_B
 
                                 IF (PRESENT(store)) THEN
                                         IF (store .eqv. .TRUE.) THEN
-                                                PRINT *, 'Writing eigenvalues to "eigenvalues_k.txt"...'
+                                                PRINT *, 'Writing eigenvalues to "Output/eigenvalues_k.txt"...'
 
                                                 OPEN(UNIT=10, FILE='eigenvalues_k.txt', ACTION='Write')
                                                   WRITE(10, '(I5, F15.7)') (i, W(i), i=1,M)
@@ -167,7 +167,7 @@ MODULE TASK_B
                                                         PRINT *, 'Writing eigenvectors to "eigenvectors_k.txt"...'
                                                 
                                                         WRITE(fmt, '("(",I5,"F15.7)")') 2*M+1
-                                                        OPEN(UNIT=10, FILE='eigenvectors_k.txt', ACTION='Write')
+                                                        OPEN(UNIT=10, FILE='Output/eigenvectors_k.txt', ACTION='Write')
                                                           WRITE(10, fmt) (k(i), Z(i,:M), i=1,d)
                                                         CLOSE(10)
 
@@ -187,7 +187,7 @@ MODULE TASK_B
                         ELSE
                                 PRINT *, 'Something went wrong durig the computation of the eigenvalues'
                         ENDIF
-                END SUBROUTINE SOLVE_EIGH
+                END SUBROUTINE SOLVE_EIGH_K
                         
 END MODULE
 

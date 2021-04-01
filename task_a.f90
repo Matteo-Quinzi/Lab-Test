@@ -27,7 +27,7 @@ MODULE TASK_A
                         e(:) = -1d0/(2d0 * h**2)
                 END SUBROUTINE HAMILTONIAN
 
-                SUBROUTINE SOLVE_EIGH(x, N, V, eigval_only, eigh_range, VL, VU, IL, IU, store)
+                SUBROUTINE SOLVE_EIGH_X(x, N, V, eigval_only, eigh_range, VL, VU, IL, IU, store)
                         ! Solves the eigenvalue problem in the reciprocal space using the LAPACK
                         ! routine DSTEVR (http://www.netlib.org/lapack/).
 
@@ -86,7 +86,7 @@ MODULE TASK_A
                                         IF (store .eqv. .TRUE.) THEN
                                                 PRINT *, 'Writing eigenvalues to "eigenvalues.txt"...'
 
-                                                OPEN(UNIT=10, FILE='eigenvalues.txt', ACTION='Write')
+                                                OPEN(UNIT=10, FILE='Output/eigenvalues.txt', ACTION='Write')
                                                   WRITE(10, '(I5, F15.7)') (i, W(i), i=1,M)
                                                 CLOSE(10)
                                         
@@ -96,7 +96,7 @@ MODULE TASK_A
                                                         PRINT *, 'Writing eigenvectors to "eigenvectors.txt"...'
                                                 
                                                         WRITE(fmt, '("(",I5,"F15.7)")') M+1
-                                                        OPEN(UNIT=10, FILE='eigenvectors.txt', ACTION='Write')
+                                                        OPEN(UNIT=10, FILE='Output/eigenvectors.txt', ACTION='Write')
                                                           WRITE(10, fmt) (x(i), Z(i,:M), i=1,N)
                                                         CLOSE(10)
 
@@ -112,9 +112,11 @@ MODULE TASK_A
                                         PRINT *, ''
                                 ENDIF
 
-
                         ELSE
                                 PRINT *, 'Something went wrong durig the computation of the eigenvalues'
                         ENDIF
-                END SUBROUTINE SOLVE_EIGH
-END MODULE 
+                END SUBROUTINE SOLVE_EIGH_X
+                !
+                !
+                !
+        END MODULE 
