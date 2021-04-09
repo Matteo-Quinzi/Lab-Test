@@ -1,22 +1,37 @@
-### INITIAL PARAMETERS - INTERVAL [a,b] ###
- a            b        N
-0.           17.5      4999
+### INITIAL PARAMETERS - INTERVAL [a,b] 
+a = -20.          
+b = 20.      
+N = 4999
 
-### POTENTIAL ###
+### POTENTIAL 
+pot = H
+
 # HARMONIC
-k
-1.
+k_el = 1.
 
 # MORSE
-D_e         alpha        x0
-50.          0.5         2.5
+D_e = 50.        
+alpha = 0.5       
+x0 = 2.5
 
-### WAVE VECTORS ###
-d
-51
+### WAVE VECTORS
+d = 51
 
-### TASK ###
-c
+### COMPUTATION
+task = a
+
+jobz = N
+range = I
+
+IL = 1
+IU = 10
+
+VL = 1.
+VU = 10.
+
+store = F
+
+
 
 
 
