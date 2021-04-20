@@ -1,5 +1,5 @@
 ## INTERVAL [0, L]
-N= 30000                  # of points
+N= 10000                  # of points
 L= 50.                    
 
 ## POTENTIAL
