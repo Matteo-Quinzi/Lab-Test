@@ -32,6 +32,7 @@ PROGRAM MAIN
             F_X(:) = F_X(:) * EXP(-im * V(:) * dt/2.D0)
 
             IF (MOD(i, save_timestep) == 0) F_evol(:, i / save_timestep + 1) = REAL(F_X(:))**2 + AIMAG(F_X(:))**2
+ 
         END DO
         
         CALL WRITE_INTO_FILE()
