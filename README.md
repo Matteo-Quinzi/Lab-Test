@@ -1,12 +1,7 @@
 # Lab-Test
 
-@alle - 25/3
+@jacomore - 20/04
 
-Caricato i file fortran del codice: il programma principale 'Morse' e i moduli 'potential', 'task_a' e 'task_b'. Sono ancora da sistemare. 
-Per scegliere in che spazio effettuare il calcolo basta commentare una delle prime due righe di codice: 
-* USE task_a
-* USE task_b
+Ho ricaricato tutto il programma in quest'altro brach per sicurezza: ci sono diverse modifiche sull'allocazione dinamica e non volevo unirlo ad harm space prima di un confronto.
 
-Il modulo task_a contiene le subroutine che calcolano gli autovalori in spazio reale, nel modulo 'task_b' invece si passa in spazio reciproco.
-
-Modificato di conseguenza il notebook per la grafica in modo che fosse compatibile con il codice.
+Nella parte finale di Morse c'è una breve linea di codice dove potete modificare i valori di input del modulo error per fare qualche analisi 
