@@ -1,10 +1,10 @@
 ### INITIAL PARAMETERS - INTERVAL [a,b] 
-a = -20.          
-b = 20.      
-N = 4999
+a = 0.
+b = 9.8522766
+N = 1000
 
 ### POTENTIAL 
-pot = H
+pot = M
 
 # HARMONIC
 k_el = 1.
@@ -20,16 +20,16 @@ d = 51
 ### COMPUTATION
 task = a
 
-jobz = N
+jobz = V
 range = I
 
 IL = 1
-IU = 10
+IU = 20
 
 VL = 1.
 VU = 10.
 
-store = F
+store = T
 
 
 

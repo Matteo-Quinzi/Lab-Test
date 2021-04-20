@@ -9,50 +9,84 @@ MODULE TASK_A
                         IMPLICIT NONE
                         
                         ! INPUT
-                        REAL(KIND=8), INTENT(IN) :: x(N), V(N)  
+                        REAL(KIND=8), INTENT(IN) :: x(:), V(:)  
 
                         ! OUTPUT
-                        REAL(KIND=8) :: dg(N), e(N-1)   ! diagonal and sub-diagonal array
+                        REAL(KIND=8), ALLOCATABLE :: dg(:), e(:)   ! diagonal and sub-diagonal array
                         
                         ! ROUTINE
                         REAL(KIND=8) :: h   ! sampling width
-                        
+                        INTEGER :: Npoints
+                        !
+                        Npoints = size(x)        
+                        !
                         h = DABS(x(2) - x(1))
+
+                        ALLOCATE(dg(Npoints),e(Npoints-1))
 
                         dg(:) = 1d0/h**2 + V(:)
                         e(:) = -1d0/(2d0 * h**2)
                 END SUBROUTINE HAMILTONIAN
 
-                SUBROUTINE SOLVE_EIGH_X(x, V)
-                        ! Solves the eigenvalue problem in the reciprocal space using the LAPACK
+                SUBROUTINE SOLVE_EIGH_X(x, V, err_eva, index)
+                        ! Solves the eigenvalue problem in the direct space using the LAPACK
                         ! routine DSTEVR (http://www.netlib.org/lapack/).
 
                         IMPLICIT NONE
 
                         ! INPUT
-                        REAL(KIND=8), DIMENSION(N) :: x, V
+                        REAL(KIND=8), INTENT(IN):: x(:), V(:)
+                        INTEGER, INTENT(IN), OPTIONAL:: index
 
                         ! ROUTINE
                         REAL(KIND=8) :: t_start, t_end
 
-                        REAL(KIND=8) :: dg(N), e(N-1)   ! diagonal and sub-diagonal array
+                        REAL(KIND=8), ALLOCATABLE :: dg(:), e(:)   ! diagonal and sub-diagonal array
 
-                        INTEGER :: M, ISUPPZ(2*N), IWORK(10*N), INFO   !
-                        REAL(KIND=8) :: ABSTOL, DLAMCH, WORK(20*N)     !
-                        REAL(KIND=8) :: W(N), Z(N,N)                   ! Eigenvalues and eigenvectors array
+                        INTEGER :: M, INFO   
+                        INTEGER, ALLOCATABLE :: ISUPPZ(:), IWORK(:)  ! ISUPPZ(2*N), IWORK(10*N),WORK(20*N) 
+                        REAL(KIND=8) :: ABSTOL, DLAMCH   
+                        real(kind=8), ALLOCATABLE :: WORK(:)  ! WORK(20*N)        
+
+                        REAL(KIND=8), ALLOCATABLE :: W(:), Z(:,:)  ! Eigenvalues and eigenvectors arrays
 
                         CHARACTER(LEN=15) :: fmt
                         REAL(KIND=8) :: dx
+                        INTEGER :: Npoints, ierr
+
+                        ! OUTPUT
+                        REAL(KIND=8), INTENT(OUT), OPTIONAL :: err_eva
+
+                        !
+                        Npoints = size(x)
+                        !
                         
                         CALL HAMILTONIAN(x, V, dg, e)   ! builds the tridiagonal Hamiltonian 
                         
                         ! EIGENVALUES CALCULUS
                         ABSTOL = 2d0 * DLAMCH('S')
+
+                        IF (PRESENT(index)) THEN  
+                                IL = index
+                                IU = index 
+                        END IF 
+
+                        ALLOCATE(ISUPPZ(2*Npoints),IWORK(10*Npoints),WORK(20*Npoints),stat=ierr)
+                        if (ierr /= 0) print*, 'Memory error 2!'
+                        ALLOCATE(W(Npoints),Z(Npoints,IU-IL+1),stat=ierr)
+                        if (ierr /= 0) print*, 'Memory error 3!'
                         
                         CALL CPU_TIME(t_start)
-                            CALL DSTEVR(JOBZ, RANGE, N, dg, e, VL, VU, IL, IU, ABSTOL, M, &
-                                    W, Z, N, ISUPPZ, WORK, 20*N, IWORK, 10*N, INFO)
+                            CALL DSTEVR(JOBZ, RANGE, Npoints, dg, e, VL, VU, IL, IU, ABSTOL, M, &
+                                    W, Z, Npoints, ISUPPZ, WORK, 20*Npoints, IWORK, 10*Npoints, INFO)
                         CALL CPU_TIME(t_end)
+
+                        IF (PRESENT(err_eva))THEN
+                                err_eva = W(1)
+                                RETURN 
+                        END IF 
+
+                        DEALLOCATE(ISUPPZ,IWORK,WORK,dg,e)
 
                         dx = x(2) - x(1)
                         Z(:,:) = Z(:,:) * dx**(-0.5)
@@ -62,6 +96,7 @@ MODULE TASK_A
 
                                         IF (store .eqv. .TRUE.) THEN
                                                 PRINT *, 'Writing eigenvalues to "eigenvalues.txt"...'
+
 
                                                 OPEN(UNIT=10, FILE='Output/eigenvalues.txt', ACTION='Write')
                                                   WRITE(10, '(I5, F15.7)') (i, W(i), i=1,M)
@@ -74,7 +109,7 @@ MODULE TASK_A
                                                 
                                                         WRITE(fmt, '("(",I5,"F15.7)")') M+1
                                                         OPEN(UNIT=10, FILE='Output/eigenvectors.txt', ACTION='Write')
-                                                          WRITE(10, fmt) (x(i), Z(i,:M), i=1,N)
+                                                          WRITE(10, fmt) (x(i), Z(i,1:M), i=1,Npoints)
                                                         CLOSE(10)
 
                                                         PRINT *, ''
