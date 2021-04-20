@@ -1,3 +1,7 @@
+# compiler files
 *.mod
 *.out
 *.exe
+
+# vim swap files
+*.swp
