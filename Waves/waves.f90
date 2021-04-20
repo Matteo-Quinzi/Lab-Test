@@ -34,9 +34,17 @@ PROGRAM MAIN
             IF (MOD(i, save_timestep) == 0) F_evol(:, i / save_timestep + 1) = REAL(F_X(:))**2 + AIMAG(F_X(:))**2
         END DO
         
-        OPEN(UNIT=10, FILE='Output/moving.txt')
-        WRITE(10, '(202F15.7)') (x(i), F_evol(i,:), i=1,N)
-        CLOSE(10)
+        CALL WRITE_INTO_FILE()
+
+        CONTAINS 
+                SUBROUTINE WRITE_INTO_FILE()
+                        CHARACTER(20) :: FMT
+
+                        WRITE(FMT, '("(", I0, "F20.10)")') save_wave + 2
+                        OPEN(UNIT = 10, FILE = 'Output/moving.txt')
+                          WRITE(10, FMT) (x(i), F_evol(i,:), i=1,N)
+                        CLOSE(10)
+                END SUBROUTINE WRITE_INTO_FILE
 
 END PROGRAM MAIN
 
