@@ -38,10 +38,6 @@ PROGRAM MAIN
         WRITE(10, '(202F15.7)') (x(i), F_evol(i,:), i=1,N)
         CLOSE(10)
 
-        OPEN(UNIT=10, FILE='Output/pot.txt')
-        WRITE(10, '(2F20.7)') (x(i), V(i), i=1,N)
-        CLOSE(10)
-
 END PROGRAM MAIN
 
 

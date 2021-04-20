@@ -20,6 +20,10 @@ MODULE TASK
                         POT(N/3 - l1 : N/3 + l1) = E_1
                         POT(N/2 - l2 : N/2 + l2) = E_2
 
+                        OPEN(UNIT = 10, FILE = 'Output/pot.txt')
+                          WRITE(10, '(2F20.10)') (x(i), V(i), i = 1, N)
+                        CLOSE(10)
+
                 END FUNCTION POT
 
                 FUNCTION PHI(x) 
