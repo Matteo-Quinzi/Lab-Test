@@ -17,7 +17,7 @@ PROGRAM MAIN
         k(N/2 + 1 : ) = (/ (-2.D0 * pi / L * (N/2.D0 - i), i=0, N/2-1) /) 
 
         V = POT(x)
-        
+
         F_X = PHI(x)
         F_evol(:,1) = REAL(F_X(:))**2 + AIMAG(F_X(:))**2
 
@@ -41,12 +41,15 @@ PROGRAM MAIN
                 SUBROUTINE WRITE_INTO_FILE()
                         CHARACTER(20) :: FMT
 
-                        WRITE(FMT, '("(", I0, "F20.10)")') save_wave + 2
+                        WRITE(FMT, '("(", I0, "F20.10)")') save_wave + 1
                         OPEN(UNIT = 10, FILE = 'Output/moving.txt')
-                          WRITE(10, FMT) (x(i), F_evol(i,:), i=1,N)
+                          WRITE(10, FMT) (F_evol(i,:), i=1,N)
+                        CLOSE(10)
+
+                        OPEN(UNIT = 10, FILE = 'Output/final_wave.txt')
+                          WRITE(10, '(2F20.10)') (F_X(i), i = 1, N)
                         CLOSE(10)
                 END SUBROUTINE WRITE_INTO_FILE
 
 END PROGRAM MAIN
-
 

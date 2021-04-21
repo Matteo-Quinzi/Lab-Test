@@ -8,6 +8,8 @@ MODULE READ_VAR
 
         INTEGER :: N, M, save_wave
         REAL(KIND=8) :: L, E_1, l_1, E_2, l_2
+        LOGICAL :: load_f_inp
+        CHARACTER(50) :: f_inp
         REAL(KIND=8) :: sigma, x0, k0
         REAL(KIND=8) :: dt
         
@@ -27,6 +29,13 @@ MODULE READ_VAR
                           READ(10, '(5X, F15.7)') E_2
                           READ(10, '(5X, F15.7)') l_2
                           READ(10, *) 
+                          READ(10, *)
+                          READ(10, *)
+                          READ(10, '(12X, L1)') load_f_inp
+                          READ(10, *)
+                          READ(10, *)
+                          READ(10, '(7X, A)') f_inp
+                          READ(10, *)
                           READ(10, *)
                           READ(10, '(7X, F15.7)') sigma
                           READ(10, '(4X, F15.7)') x0

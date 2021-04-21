@@ -35,9 +35,37 @@ MODULE TASK
                         ! OUTPUT
                         COMPLEX(KIND=8) :: PHI(N)
 
-                        PHI(:) = (2.D0 * pi * sigma**2)**(-0.25) * EXP(im * k0 * x(:)) * EXP(-(x(:) - x0)**2 / (4.D0 * sigma**2))
+                        ! ROUTINE
+                        INTEGER :: IOS
+
+                        IF (load_f_inp .eqv. .TRUE.) THEN
+                                OPEN(UNIT = 10, FILE = f_inp, STATUS = 'OLD', ACTION = 'READ', IOSTAT = IOS)
+                                IF (IOS == 0) THEN
+                                        READ(10, '(2F20.10)') (PHI(i), i = 1,N)
+
+                                ELSE
+                                        PRINT *, 'Error in opening file "', f_inp, '"'
+                                        STOP
+                                ENDIF
+
+                        ELSE
+                                PHI = PHI_GAUSS(x)
+                        ENDIF
 
                 END FUNCTION PHI
+
+                FUNCTION PHI_GAUSS(x) RESULT(F)
+                        IMPLICIT NONE
+
+                        ! INPUT
+                        REAL(KIND=8), INTENT(IN) :: x(N)
+
+                        ! OUTPUT
+                        COMPLEX(KIND=8) :: F(N)
+                        
+                        F(:) = (2.D0 * pi * sigma**2)**(-0.25) * EXP(im * k0 * x(:)) * EXP(-(x(:) - x0)**2 / (4.D0 * sigma**2))
+
+                END FUNCTION PHI_GAUSS
 
                 FUNCTION FFT(F, DIR)
                         IMPLICIT NONE

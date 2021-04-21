@@ -10,11 +10,20 @@ E_2= 50.                second barrier height
 l_2= 3.                "      "       length
 
 ## INITIAL WAVE PACKET
+# load from a file?
+load_f_inp= F
+
+# if T(rue) 
+f_inp= Output/final_wave.txt
+
+# if F(alse) -> Gaussian packet
 sigma= 1.
 x0= 5.
 k0= 10.
 
 ## TIME PARAMETERS
-M= 9999                       # of time steps
+M= 20000                       # of time steps
 dt= 0.0005                  timestep length
 save_wave= 199                # of waves to save at each run
+
+
