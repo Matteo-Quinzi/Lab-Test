@@ -21,6 +21,8 @@ PROGRAM MAIN
         F_X = PHI(x)
         F_evol(:,1) = REAL(F_X(:))**2 + AIMAG(F_X(:))**2
 
+        PRINT *, 'INTIAL NORM:', SUM(F_EVOL(:,1))
+
         save_timestep = M / save_wave 
         DO i = 1, M
             F_X(:) = F_X(:) * EXP(-im * V(:) * dt/2.D0)
@@ -34,6 +36,8 @@ PROGRAM MAIN
             IF (MOD(i, save_timestep) == 0) F_evol(:, i / save_timestep + 1) = REAL(F_X(:))**2 + AIMAG(F_X(:))**2
  
         END DO
+
+        PRINT *, 'FINAL NORM:', SUM(F_EVOL(:,save_wave +1))
         
         CALL WRITE_INTO_FILE()
 
