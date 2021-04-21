@@ -1,15 +1,18 @@
 PROGRAM MAIN
         USE READ_VAR
         USE TASK
+        USE OMP_LIB
         IMPLICIT NONE
 
-        REAL(KIND=8), ALLOCATABLE :: x(:), V(:), k(:)
-        COMPLEX(KIND=8), ALLOCATABLE :: F_X(:), F_K(:)
-        REAL(KIND=8), ALLOCATABLE :: F_evol(:,:)
- 
+        INTEGER :: l2, l1
+
+        REAL(KIND=8), ALLOCATABLE :: x(:), V(:), k(:), F_EVOL(:,:)
+        COMPLEX(KIND=8), ALLOCATABLE :: V_OP(:), K_OP(:), F_X(:), F_K(:)
+
         CALL READ_DATA()
         ALLOCATE(x(N), V(N), k(N))
-        ALLOCATE(F_X(N), F_K(N), F_evol(N,save_wave + 1))
+        ALLOCATE(V_OP(N), K_OP(N))
+        ALLOCATE(F_X(N), F_K(N), F_EVOL(N, save_wave+1))
         
         x(:) = (/ (i * L / (N - 1), i = 0, N-1) /)
         
@@ -18,12 +21,20 @@ PROGRAM MAIN
 
         V = POT(x)
 
+        V_OP(:) = EXP(-im * V(:) * dt / 2.D0)
+        K_OP(:) = EXP(-im * k(:)**2 * dt / 2.D0)
+
+        !$OMP PARALLEL PRIVATE(F_X, F_K) SHARED(F_EVOL)
+
         F_X = PHI(x)
-        F_evol(:,1) = REAL(F_X(:))**2 + AIMAG(F_X(:))**2
 
-        PRINT *, 'INTIAL NORM:', SUM(F_EVOL(:,1))
+        F_EVOL(:,1) = REAL(F_X(:))**2 + AIMAG(F_X(:))**2
 
-        save_timestep = M / save_wave 
+        PRINT *, 'INITIAL NORM:', SUM(F_EVOL(:,1)) * (x(2)-x(1))
+
+        save_timestep = M / save_wave
+
+        !$OMP DO
         DO i = 1, M
             F_X(:) = F_X(:) * EXP(-im * V(:) * dt/2.D0)
             
@@ -33,13 +44,24 @@ PROGRAM MAIN
             F_X = FFT(F_K, 'B')
             F_X(:) = F_X(:) * EXP(-im * V(:) * dt/2.D0)
 
-            IF (MOD(i, save_timestep) == 0) F_evol(:, i / save_timestep + 1) = REAL(F_X(:))**2 + AIMAG(F_X(:))**2
+            IF (MOD(i, save_timestep) == 0) F_EVOL(:, i / save_timestep + 1) = REAL(F_X(:))**2 + AIMAG(F_X(:))**2
  
         END DO
+        !$OMP END DO
+        !$OMP END PARALLEL
 
-        PRINT *, 'FINAL NORM:', SUM(F_EVOL(:,save_wave +1))
+        PRINT *, 'FINAL NORM:  ', SUM(F_EVOL(:,save_wave +1)) * (x(2)-x(1))
         
         CALL WRITE_INTO_FILE()
+
+        l1 = INT(N * l_1 / (2 * L))
+        l2 = INT(N * l_2 / (2 * L))
+
+        PRINT '(A, F7.5, A)', 'R  = ', SUM(F_EVOL(         : N/3 - l1, save_wave+1)) * (x(2)-x(1)), ' %'
+        PRINT '(A, F7.5, A)', 'A1 = ', SUM(F_EVOL(N/3 - l1 : N/2 + l1, save_wave+1)) * (x(2)-x(1)), ' %'
+        PRINT '(A, F7.5, A)', 'A12= ', SUM(F_EVOL(N/3 + l1 : N/2 - l2, save_wave+1)) * (x(2)-x(1)), ' %'
+        PRINT '(A, F7.5, A)', 'A2 = ', SUM(F_EVOL(N/2 - l2 : N/2 + l2, save_wave+1)) * (x(2)-x(1)), ' %'
+        PRINT '(A, F7.5, A)', 'T  = ', SUM(F_EVOL(N/2 + l2 :         , save_wave+1)) * (x(2)-x(1)), ' %'
 
         CONTAINS 
                 SUBROUTINE WRITE_INTO_FILE()
