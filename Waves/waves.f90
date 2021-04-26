@@ -5,6 +5,7 @@ PROGRAM MAIN
         IMPLICIT NONE
 
         INTEGER :: l2, l1
+        REAL(KIND=8) :: peak, x_peak
 
         REAL(KIND=8), ALLOCATABLE :: x(:), V(:), k(:), F_EVOL(:,:)
         COMPLEX(KIND=8), ALLOCATABLE :: V_OP(:), K_OP(:), F_X(:), F_K(:)
@@ -58,11 +59,25 @@ PROGRAM MAIN
         l2 = INT(N * l_2 / (2 * L))
 
         PRINT '(A, F7.5, A)', 'R  = ', SUM(F_EVOL(         : N/3 - l1, save_wave+1)) * (x(2)-x(1)), ' %'
-        PRINT '(A, F7.5, A)', 'A1 = ', SUM(F_EVOL(N/3 - l1 : N/2 + l1, save_wave+1)) * (x(2)-x(1)), ' %'
+        PRINT '(A, F7.5, A)', 'A1 = ', SUM(F_EVOL(N/3 - l1 : N/3 + l1, save_wave+1)) * (x(2)-x(1)), ' %'
         PRINT '(A, F7.5, A)', 'A12= ', SUM(F_EVOL(N/3 + l1 : N/2 - l2, save_wave+1)) * (x(2)-x(1)), ' %'
         PRINT '(A, F7.5, A)', 'A2 = ', SUM(F_EVOL(N/2 - l2 : N/2 + l2, save_wave+1)) * (x(2)-x(1)), ' %'
         PRINT '(A, F7.5, A)', 'T  = ', SUM(F_EVOL(N/2 + l2 :         , save_wave+1)) * (x(2)-x(1)), ' %'
 
+        peak = 0.D0
+        x_peak = 0.D0
+
+        DO i = 1, N
+          IF (i >= N/2 + l2) THEN
+                  IF (F_EVOL(i, save_wave+1) > peak) THEN
+                          peak = F_EVOL(i, save_wave+1)
+                          x_peak = x(i)
+                  END IF
+         END IF
+       END DO
+
+       PRINT *, 'Found peak at', x_peak
+          
         CONTAINS 
                 SUBROUTINE WRITE_INTO_FILE()
                         CHARACTER(20) :: FMT
