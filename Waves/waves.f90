@@ -5,15 +5,15 @@ PROGRAM MAIN
         IMPLICIT NONE
 
         INTEGER :: l2, l1
-        REAL(KIND=8) :: peak, x_peak
+        REAL(KIND=8) :: peak, x_peak, ent, exi, t_ent, t_exi
 
-        REAL(KIND=8), ALLOCATABLE :: x(:), V(:), k(:), F_EVOL(:,:)
+        REAL(KIND=8), ALLOCATABLE :: x(:), V(:), k(:), F_EVOL(:,:), F_SQMOD(:)
         COMPLEX(KIND=8), ALLOCATABLE :: V_OP(:), K_OP(:), F_X(:), F_K(:)
 
         CALL READ_DATA()
         ALLOCATE(x(N), V(N), k(N))
         ALLOCATE(V_OP(N), K_OP(N))
-        ALLOCATE(F_X(N), F_K(N), F_EVOL(N, save_wave+1))
+        ALLOCATE(F_X(N), F_K(N), F_SQMOD(N), F_EVOL(N, save_wave+1))
         
         x(:) = (/ (i * L / (N - 1), i = 0, N-1) /)
         
@@ -21,6 +21,9 @@ PROGRAM MAIN
         k(N/2 + 1 : ) = (/ (-2.D0 * pi / L * (N/2.D0 - i), i=0, N/2-1) /) 
 
         V = POT(x)
+
+        l1 = INT(N * l_1 / (2 * L))
+        l2 = INT(N * l_2 / (2 * L))
 
         V_OP(:) = EXP(-im * V(:) * dt / 2.D0)
         K_OP(:) = EXP(-im * k(:)**2 * dt / 2.D0)
@@ -45,24 +48,35 @@ PROGRAM MAIN
             F_X = FFT(F_K, 'B')
             F_X(:) = F_X(:) * EXP(-im * V(:) * dt/2.D0)
 
-            IF (MOD(i, save_timestep) == 0) F_EVOL(:, i / save_timestep + 1) = REAL(F_X(:))**2 + AIMAG(F_X(:))**2
+            F_SQMOD(:) = REAL(F_X(:))**2 + AIMAG(F_X(:))**2
+
+            IF (F_SQMOD(N/2-l1) > ent) THEN 
+                    ent = F_X(N/2-l1)
+                    t_ent = i*dt
+            ENDIF
+
+            IF (F_SQMOD(N/2+l1) > exi) THEN 
+                    exi = F_X(N/2+l1)
+                    t_exi = i*dt
+            ENDIF
+
+            IF (MOD(i, save_timestep) == 0) F_EVOL(:, i / save_timestep + 1) = F_SQMOD(:)
  
         END DO
         !$OMP END DO
         !$OMP END PARALLEL
 
         PRINT *, 'FINAL NORM:  ', SUM(F_EVOL(:,save_wave +1)) * (x(2)-x(1))
-        
+        PRINT *, ''
+        PRINT *, 'TIME DELAY:', t_exi - t_ent
+
         CALL WRITE_INTO_FILE()
-
-        l1 = INT(N * l_1 / (2 * L))
-        l2 = INT(N * l_2 / (2 * L))
-
-        PRINT '(A, F7.5, A)', 'R  = ', SUM(F_EVOL(         : N/3 - l1, save_wave+1)) * (x(2)-x(1)), ' %'
-        PRINT '(A, F7.5, A)', 'A1 = ', SUM(F_EVOL(N/3 - l1 : N/3 + l1, save_wave+1)) * (x(2)-x(1)), ' %'
-        PRINT '(A, F7.5, A)', 'A12= ', SUM(F_EVOL(N/3 + l1 : N/2 - l2, save_wave+1)) * (x(2)-x(1)), ' %'
-        PRINT '(A, F7.5, A)', 'A2 = ', SUM(F_EVOL(N/2 - l2 : N/2 + l2, save_wave+1)) * (x(2)-x(1)), ' %'
-        PRINT '(A, F7.5, A)', 'T  = ', SUM(F_EVOL(N/2 + l2 :         , save_wave+1)) * (x(2)-x(1)), ' %'
+        
+        PRINT '(A, F7.5, A)', 'R  = ', SUM(F_EVOL(           : N/2 - l1   , save_wave+1)) * (x(2)-x(1)), ' %'
+        PRINT '(A, F7.5, A)', 'A1 = ', SUM(F_EVOL(N/2 - l1   : N/2 + l1   , save_wave+1)) * (x(2)-x(1)), ' %'
+        PRINT '(A, F7.5, A)', 'A12= ', SUM(F_EVOL(N/2 + l1   : 2*N/3 - l2 , save_wave+1)) * (x(2)-x(1)), ' %'
+        PRINT '(A, F7.5, A)', 'A2 = ', SUM(F_EVOL(2*N/3 - l2 : 2*N/3 + l2 , save_wave+1)) * (x(2)-x(1)), ' %'
+        PRINT '(A, F7.5, A)', 'T  = ', SUM(F_EVOL(2*N/3 + l2 :            , save_wave+1)) * (x(2)-x(1)), ' %'
 
         peak = 0.D0
         x_peak = 0.D0

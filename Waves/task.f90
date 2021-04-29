@@ -17,8 +17,8 @@ MODULE TASK
                         l2 = INT(N * l_2 / (2 * L))
 
                         POT(:) = 0.D0
-                        POT(N/3 - l1 : N/3 + l1) = E_1
-                        POT(N/2 - l2 : N/2 + l2) = E_2
+                        POT(  N/2 - l1 :   N/2 + l1) = E_1
+                        POT(2*N/3 - l2 : 2*N/3 + l2) = E_2
 
                         OPEN(UNIT = 10, FILE = 'Output/pot.txt')
                           WRITE(10, '(2F20.10)') (x(i), POT(i), i = 1, N)
