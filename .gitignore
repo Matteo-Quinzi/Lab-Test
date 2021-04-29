@@ -1,4 +1,5 @@
 *.mod
 *.txt
 *.o
-a.out
+*.out
+*.exe
