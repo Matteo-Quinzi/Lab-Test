@@ -142,13 +142,13 @@ MODULE task_c
                 ALLOCATE(eva_ho(M), eve_ho(N,M), H_ho(M,M))
                 
                 ! Approximating Morse potential with harmonic potential
-                V_ho =  SHIFTED_HARMONIC(x)
+                V_ho =  SHIFTED_HARMONIC(x,N)
                 OPEN(unit = io_unit, file='Output/pot_ho.txt')
                     WRITE(io_unit, fmt='(2F15.7)') ( x(i), V_ho(i), i=1,N)
                 CLOSE(io_unit)
 
                 ! Solving eigenvalues problem for the harmonic potential
-                CALL SOLVE_EIGH_X(x, V_ho)
+                CALL SOLVE_EIGH_X(x, V_ho, N)
 
                 ! Reading eigenvalues and eigenvectors 
                 OPEN(unit = io_unit, file='Output/eigenvalues.txt', STATUS='old')

@@ -4,8 +4,7 @@ MODULE READ_VAR
     REAL(KIND=8) :: pi = 4.D0 * DATAN(1.D0)
     COMPLEX(KIND=8) :: im = (0.D0, 1.D0)
 
-    INTEGER :: i, j
-
+   
     INTEGER :: N, d
     REAL(KIND=8) :: a, b
     REAL(KIND=8) :: k_el
@@ -14,6 +13,8 @@ MODULE READ_VAR
     INTEGER :: IL, IU
     REAL(KIND=8) :: VL, VU
     LOGICAL :: store
+    INTEGER :: i, j
+
     
     
     CONTAINS
