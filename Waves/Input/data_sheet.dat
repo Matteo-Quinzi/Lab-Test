@@ -4,10 +4,10 @@ L= 300.
 
 ## POTENTIAL
 E_1= 50.                 first barrier height
-l_1= 5.                   "     "       length
+l_1= 16.                   "     "       length
 
-E_2= 50.                second barrier height
-l_2= 5.                "      "       length
+E_2= 0.                second barrier height
+l_2= 1.                "      "       length
 
 ## INITIAL WAVE PACKET
 # load from a file?
@@ -18,12 +18,12 @@ f_inp= Output/final_wave.txt
 
 # if F(alse) -> Gaussian packet
 sigma= 1.
-x0= 140.
-k0= 10.
+x0= 112.
+k0= 9.
 
 ## TIME PARAMETERS
-M= 18000                   # of time steps
-dt= 0.0005                  timestep length
+M= 15000                  # of time steps
+dt= 0.001                  timestep length
 save_wave= 100              # of waves to save at each run
 
 
