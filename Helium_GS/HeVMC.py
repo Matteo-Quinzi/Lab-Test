@@ -330,7 +330,7 @@ def evaluate_energy(weight, EL, p0=np.array([1.,1.,1.,-1.,-1.,-1.]),
         #Taking the mean of the average energies
         best_energy = np.mean(mean_energies)
         percs = np.percentile(mean_energies, [2.5,97.5])
-        energy_err = percs[0] - percs[1]
+        energy_err = np.abs(percs[0] - percs[1])
      
     elif (method.lower() == 'split') :
         #Splitting MarkovChain in subchains
