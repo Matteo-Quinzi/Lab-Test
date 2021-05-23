@@ -16,7 +16,7 @@ def metropolis(steps, init_point, d, weight):
        one) returned
        init_point (float,1d array) : initial point in configuration
        space 
-       d (float) : semi amplitude of virtual displacement interval
+       d (float) : half width of virtual displacement interval
        weight (function) : This function represents the asymptotic
        probability distribution. If properly equilibrated, the chain
        will contain states distributed according to the weight function.
@@ -26,8 +26,8 @@ def metropolis(steps, init_point, d, weight):
        Outputs:
        -----------------
        chain ((steps+1 X len(init_point) array): array containing
-       the evolved states per rows. 
-       acceptance_ratio (float) : ratio equals to the number of accepted moves
+       the evolved states (one on each row). 
+       acceptance_ratio (float) : ratio of the number of accepted moves
        with respect to the total number of moves.'''
     
     dim = len(init_point)
@@ -62,26 +62,25 @@ def metropolis(steps, init_point, d, weight):
 #
 #
 #
-# Helium class routines 
-def laplacian(f, coords, dx=0.0001):
-    '''Compute the Laplacian in cartesian orthogonal coordinates
-    in a given point specified by coords.
-    As long as the coordinate system is orthogonal, this laplacian
-    works in any dimension. 
-    '''
-    lap = 0.
-    
-    for i in range(len(coords)):
-        c_p = coords.copy()
-        c_p[i] += dx 
-        c_m = coords.copy()
-        c_m[i] -= dx
-        lap += ( f(c_p) -2.*f(coords) + f(c_m) ) / dx**2.
-    return lap
-#
+# INTERNAL HELIUM CLASS ROUTINES
+# These are listed out of the Helium class for readability 
+# and code maintainability
 #
 #
 def LaplacianPsiOverPsi(coords,WaveFunction):
+    ''' Evaluate the Laplacian of a wave function and 
+    divide it for the wave function itself.
+    
+    Arguments: 
+    -------------
+    coords (2-dim array) : 2-dimensional array containing 
+    on each row the coordinates of a state where the wavefunction
+    must be evaluated. 
+    
+    Outputs:
+    lap (1-dim array) : 1-dimensional array containing 
+    the laplacian of psi over psi evaluated at each state.
+    '''
     lap = np.zeros(len(coords))
     delta=0.0001
     for i in range(0,len(coords)):
@@ -102,7 +101,11 @@ def LaplacianPsiOverPsi(coords,WaveFunction):
 #
 #
 def set_npj_wave_func(Z):
-    
+    '''Given the variational parameter Z, returns the wavefunction without the 
+       Padé-Jastrow approximant.
+       The wave function returned works only with 1-dimensional arrays containing
+       the two electrons coordinates as [x1,y1,z1,x2,y2,z2]
+    '''
     def npj_wave_func(coords): 
         wf = np.exp( -Z*la.norm(coords[:3]) ) * np.exp( -Z*la.norm(coords[3:]) )
         return wf 
@@ -112,10 +115,11 @@ def set_npj_wave_func(Z):
 #
 #
 def set_pade_jastrow(b):
-    
+    '''Given the variational parameter b, returns the wavefunction without the 
+       Padé-Jastrow approximant. Cusp conditions have already been considered. 
+       The wave function returned works only with 1-dimensional arrays containing
+       the two electrons coordinates as [x1,y1,z1,x2,y2,z2]'''
     def pade_jastrow(coords):
-        '''Return the square of the Padé-Jastrow trial wavefunction.
-           b is the variational parameter'''
         r1_v = np.array(coords[:3])
         r2_v = np.array(coords[3:])
         r12_v = r1_v - r2_v
@@ -133,7 +137,9 @@ def set_pade_jastrow(b):
 #
 #
 def set_potential_He(interacting):
-    
+    '''Returns the Helium potential. The boolean parameter interacting
+       allows to neglect the e-e interaction term.
+    '''
     if interacting==True : 
         
         def potential_He(coords): 
@@ -164,7 +170,11 @@ def set_potential_He(interacting):
 #
 #
 def set_loc_en_pj(b, interacting):
-    
+    '''Returns Helium local energy evaluated for the Padé-Jastrow
+       trial wavefunction. b is the variational parameter, while
+       the boolean argument interacting allows to neglect e-e interaction 
+       term. Cusp conditions are already considered in this implementation.
+    '''
     if interacting == True:
         
         def loc_en_pj(coords):
@@ -194,7 +204,7 @@ def set_loc_en_pj(b, interacting):
         
         def loc_en_pj(coords):
             '''Return the local energy for the Helium atom, with 
-            interacting potential and Padé-Jastrow trial 
+            non-interacting potential and Padé-Jastrow trial 
             wavefunction. 
             b is the variational parameter'''
             el = np.empty(len(coords))
@@ -220,7 +230,11 @@ def set_loc_en_pj(b, interacting):
 #
 #
 def set_local_energy_npj(Z,interacting=True):
-    
+    '''Returns Helium local energy evaluated for the non-Padé-Jastrow
+       trial wavefunction. Z is the variational parameter, while
+       the boolean argument interacting allows to neglect e-e interaction 
+       term.
+    '''
     if interacting == True :
         def local_energy(coords):
             el = np.empty(len(coords))
@@ -237,9 +251,20 @@ def set_local_energy_npj(Z,interacting=True):
     return local_energy
 #
 #
-# Statistical routines 
+# STATISTICAL ROUTINES
 def bootstrap_rep(data, func):
-    '''Bootstrap replicates'''
+    '''Evaluate a bootstrap replicate for a given function.
+       
+       Arguments:
+       --------------
+       data (float,array) : array containing the data that must
+       be resampled. 
+       func (function object) : the replicate is actually the value of the function
+       evaluated on the resampled data 
+       
+       Outputs:
+       (float) , returns the replicate evaluated on the resampled data. 
+    '''
     return func(rd.choice(data, len(data)))
 #
 #
@@ -247,7 +272,20 @@ def bootstrap_rep(data, func):
 def make_stats(chain, pieces, array=False):
     '''Given a chain of data, this is divided into 
     the selected number of subchains. The mean value and the 
-    mean value variance are finally returned.'''
+    mean value standard deviation are finally returned.
+    
+    Arguments:
+    ----------------
+    chain (float, array) : the array to be split into subchains;
+    pieces (integer) : the number of subchains wanted;
+    array (bool) : if True the values of the mean evaluated on each subchain 
+    is returned.
+    
+    Outputs:
+    ---------------
+    (float)(float) : returns the average of the mean values distribution
+    and its standard deviation.
+    '''
     #slice the chain with split
     sub_chains = np.array_split(chain, pieces)
     
@@ -263,14 +301,12 @@ def make_stats(chain, pieces, array=False):
 #
 #
 #
-# Energy functional routines 
+# ENERGY FUNCTIONAL ROUTINES
 def evaluate_energy(weight, EL, p0=np.array([1.,1.,1.,-1.,-1.,-1.]),
                     steps=10000, d=1.25, method='bootstrap',
-                    samples=1000, talky=False):
+                    samples=1000, talky=False,
+                    save_chain=False):
     '''This function evaluate the energy functional for a generic system.
-    Returns the best value for the functional with a 95% Confidence interval
-    around this value.
-    Both mean and CI are determined through bootstrap analysis.
     
     Arguments:
     --------------
@@ -284,17 +320,18 @@ def evaluate_energy(weight, EL, p0=np.array([1.,1.,1.,-1.,-1.,-1.]),
     of steps.
     d (float) : passed as semi amplitude interval for 
     virtual displacements in metropolis.
-    err (bool) : if True error analysis is performed
-    bs_samples : number of samples in bootsrap analysis
-    talky (bool) : if True error analysis results are printed
+    samples : number of samples for statistical analysis.
+    talky (bool) : if True error analysis results are printed.
     
     Outputs:
     ----------------
-    best_energy (float) : Best value for the functional
-    CI (float) : confidence interval amplitude; 
-    returned only if err == True
+    best_energy (float) : Best value for the functional; its evaluated
+    as the average of the mean values distribution.
+    energy_err (float) : error on the functional value returned;
+    if bootstrap analysis is performed it is the 95% C.I. of
+    the mean values distribution, otherwise it is the standard deviation.
     acceptance_ratio (float) : Markov Chain acceptance ratio;
-    returned only if err == True
+    returned only if err == True.
     '''           
     
     r6 = MarkovChain(init_point=p0, prob_dist = weight, d = d) #Markov Chain instance
@@ -359,13 +396,16 @@ def evaluate_energy(weight, EL, p0=np.array([1.,1.,1.,-1.,-1.,-1.]),
         print('Statistics time     : %7.5f' % stats_time)
         print('************************************************')
             
-    return best_energy, energy_err, r6.acceptance_ratio
+    if save_chain == False :
+        return best_energy, energy_err, r6.acceptance_ratio
+    else :
+        return best_energy, energy_err, r6.acceptance_ratio, r6.chain
 #
 #
 #
 def optimize_He_ds(Z, b, He, info=False, energy_args=None):
     '''Look for the minimum of the energy functional 
-    sampling a finite set of equispaced points in parameter space.
+    sampling a finite set of points in parameter space.
     
     Arguments:
     ------------
@@ -373,14 +413,16 @@ def optimize_He_ds(Z, b, He, info=False, energy_args=None):
     b (float, 1d array) : Array with b values
     ! Must have same dimension as Z
     He (Helium object) : Helium object representing the system.
-    From this object weight function and local energy are computed.
-    err (bool) : if True errors are computed
+    From this object weight function and local energy are evaluated.
+    info (bool) : if True error analysis is printed out for each run.
+    energy_args (dict) : dictionary of key-word arguments to pass to 
+    evaluate_energy function. This may be used for fine tuning.
     
     Output: 
-    best_param (float): returns the parameters minimizing the energy.
+    best_param (float,tuple): returns the parameters minimizing the energy.
     best_energy(float): returns the minimum value of the energy.
-    errors (float, 1d array) : returned only if err == True.
-    Contains the error evaluated at each iteration.
+    energies(float, 1d array) : returns the value of energies evluated on each point.
+    errors (float, 1d array) : Contains the error evaluated at each iteration.
     '''
     energies = np.empty(len(Z))
     errors = np.empty(len(Z))
@@ -408,10 +450,27 @@ def optimize_He_ds(Z, b, He, info=False, energy_args=None):
 #
 #
 def energy_1D(x, He, b_or_z='b', info=False, args=None):
+    '''This function is internally used by optimize_He_gss.
+       To use golden section search algorithms a proper
+       1-dimensional function must be defined.
+       
+       Arguments:
+       -------------
+       x(float) : variable representing the variational parameter.
+       He (Helium object) : Helium class object representing the studied
+       Helium system.
+       b_or_z (character) : determines which variational parameter is being changed;
+       info (bool) : if True error analysis results are printed out at each run;
+       args (dict) : dictionary containing key-word arguments for evaluate-energy function.
+       
+       Outputs:
+       ---------------
+       energy(float) : the best value for the energy functional.
+    '''
     if b_or_z == 'b':
         He.b = x
     elif b_or_z == 'z':
-        He.z = x
+        He.Z = x
     else :
         print('Invalid input:\nyou should put b or z as a string')
         return None
@@ -430,6 +489,39 @@ def energy_1D(x, He, b_or_z='b', info=False, args=None):
 def optimize_He_gss(He, b_or_z, interval, 
                     info = False, energy_args=None,
                     tol=1e-4, maxit=50, display=False):
+    ''' Function looking for the variational parameter that minimizes 
+    Helium energy. Implements a golden section search through scipy 
+    function minimize_scalar. Method 'bounded' is chosen as it ensures 
+    convergence in the investigated interval and implements 'Brent' algorithm
+    to speed up convergence whenever possible. 'Brent' algorithm is based 
+    on parabolic interpolation.
+    The function must be unstable as the enrgy functional may have considerable 
+    fluctuations in the working interval.
+    
+    Arguments:
+    ----------------
+    He (Helium object) : Describes the Helium system considered.
+    b_or_z (character) : defines which variational parameter is being changed.
+    interval (tuple, or list like) : defines the interval boundaries where
+    the search is conducted. 'bounded' method ensures convergence within 
+    the interval.
+    info (bool) : if True error analysis is printed out at each step.
+    energy_args (dict) : dictionary of key-word arguments that can be passed to 
+    evaluate_energy function for fine-tuning.
+    tol (float) : tolerance fr the convergence algorithm. It must be intended
+    as absolute tolerance for the 'bounded' algorithm. Note that other methods
+    while not implemented ('Brent','golden') use tol as relative tolerance.
+    makit(integer) : maximum number of iterations 
+    display(bool) : if True a feedback message on convergence success is printed out 
+    at the end of the gss algorithm.
+    
+    Outputs:
+    -------------
+    best_param (float) : variational parameter that minimizes the functional energy.
+    optimize_results (OptimiseResults object) : contains information on the 
+    algorithm convergence. More detail on scipy.
+    
+    '''
     
     #define arguments to pass to energy_1d
     if (type(energy_args).__name__ == 'dict'):
@@ -457,7 +549,31 @@ def optimize_He_gss(He, b_or_z, interval,
 class MarkovChain:
     '''Class describing a Markov Chain in phase space,
        starting at init_point and with asymptotic probability 
-       distribution given by prob_dist'''
+       distribution given by prob_dist.
+       
+       Attributes: 
+       _init_point (float, 1d array) : contains the chain starting 
+       point in configuration space.
+       _prob_dist (fucn) : gives the asymptotic probability distribution
+       of the chain. After proper equilibration, the state of the chains will be 
+       distributed with the weight distribution.
+       _d (float) : half width of the interval for the virtual displacements in 
+       Metropolis algorithm. 
+       _steps (integer) : number of states (except the initial one) to sample.
+       _chain (2d array): contains the sampled states on each row and 
+       the state coordinates on each column.
+       acceptance_ratio (float) : number of accepted moves with respet to the 
+       total number of moves.
+       
+       Methods :
+       ------------------
+       set_chain : initialize an empty Markov chain given the wanted number
+       of steps.
+       evolve_chain : sample states in configuration space with the weight distribution 
+       and using the metropolis function. A boolean parameter 'save' allow to 
+       store the last point of the chain as the new init_point (This may be
+       helpful when evolving the chain).
+    '''
     
     def __init__(self, init_point=np.empty((1,1)), 
                  prob_dist=None, d=0.) :
@@ -488,10 +604,47 @@ class MarkovChain:
 #
 #
 class Helium:
+    ''' Class describing a Helium system. 
+    The wavefunction implemented are thought to be used for a 
+    variational algorithm minimization procedure.
+    In this implementation reduced mass effects are neglected as 
+    well as spin effects too.
+    This results in having electrons wavefunctions that are symmetric 
+    and particles position exchange.
     
+    Attributes:
+    -----------------
+    Z (float) : This is a VARIATIONAL PARAMETER, and not the actual
+    charge of Helium that is correctly defined in the potential.
+    b (float) : variational parameter used for the Padé-Jastrow trial
+    wavefunction.
+    coords (float, 1d array) : contains the electrons position with respect
+    to the nucleus.
+    _interacting(bool) : if True interacting potential is considered.
+    _jastrow(bool) : if True Padé-Jastrow trial wavefunction is considered.
+    _numeric(bool) : if True the laplacian in the local energy calculation 
+    is evaluated numerically. Otherwise the local energy is evaluated through 
+    the analytic formula.
+    V (func) : evaluate the potential on a 2d array containing the states 
+    on each row and the electrons coordinates on each column as 
+    [x1,y1,z1,x2,y2,z2].
+    EL (func) : evaluate the local energy on a 2d array as described for V.
+    WF (func) : evaluate the wavefunction on a 1d array of coordinates.
+    weight (func) : evaluate the weight function for Helium as described for WF.
+    The weight is easily obtained as the square of WF.
+    
+    Methods:
+    ---------------------
+    Note : internal methods preceded by 'set' are just used to 
+    set the Helium attributes when a given instance is created.
+    
+    reconfig : boolean parameters _interacting, _jastrow and _numeric 
+    are substitued and the attributes V, EL, WF and weight are 
+    reassigned.
+    
+    '''
     def __init__(self, Z, b, coords=[1.,1.,1.,-1.,-1.,-1.],
                  interacting=True, jastrow=True, numeric=False):
-        self.name = 'Helium'
         self.Z = Z                      #Variational parameters Z and b
         self.b = b
         self.coords = coords
@@ -541,7 +694,7 @@ class Helium:
         self.EL = EL
         return
     
-    def reconfig(self, interacting, jastrow): 
+    def reconfig(self, interacting, jastrow):
         self._interacting = interacting
         self._jastrow = jastrow
         self.set_potential()                 

@@ -1,0 +1,35 @@
+## Helium properties 
+interacting           jastrow               numeric
+1                     1                     0 
+
+## Metropolis parameters 
+steps                 d 
+100000                1.6
+
+##Error analysis parameters
+method                samples
+0                     1000
+
+##Minimum implementation 
+b_or_z       low_bound      up_bound      param_samples
+1            0.             0.5           11
+
+## Direct search points 
+n_ds 
+5 
+
+#Golden Section search parameters
+n_gs          tol                maxit
+5            1e-4                50
+
+#seed for random number generator
+42 
+
+#output chain step frequency 
+100
+
+#final evaluate energy runs
+n_ev
+5
+
+

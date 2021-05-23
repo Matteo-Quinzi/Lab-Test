@@ -1,0 +1,6 @@
+Best param : 0.25003984
+
+Best Energy functional value : -2.87622570
+Error on the energy functional : 0.00357864
+
+Metropolis Acceptance ratio on last run : 0.4625
