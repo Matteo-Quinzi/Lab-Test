@@ -6,11 +6,11 @@ program ho_basis
     !
     integer, parameter :: N = 5000, M = 25, io_unit=12
     integer :: i
-    real(kind=8), parameter :: L = 15.d0, D_e = 100.d0, alpha = 0.5d0, x_0 = 5.d0
+    real(kind=8), parameter :: L = 15.d0, D_e = 50.d0, alpha = 0.5d0, x_0 = 2.5d0
     real(kind=8) :: x(N), V_morse(N), V_harmonic(N), d_morse(N), e_morse(N-1), d_harmonic(N), e_harmonic(N-1) 
     real(kind=8) :: eigenvals_m(M), eigenvecs_m(N,M), eigenvals_h(M), eigenvecs_h(N,M)
     real(kind=8) :: dx, integral, test_fun(N), V_eff(N), H_ho(M,M)
-    real(kind=8) :: eigenvals_ho(M)
+    real(kind=8) :: eigenvals_ho(M), summ
     dx = L / (N+1) 
     !
     ! defining discretization in x space and potentials
@@ -88,4 +88,10 @@ program ho_basis
     close(io_unit)
     !
     !
+    summ = 0
+    do i = 1, M 
+        summ = summ + H_ho(i,1)*H_ho(i,1)
+    end do 
+    print*, summ
+
 end program ho_basis

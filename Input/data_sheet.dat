@@ -1,7 +1,7 @@
 ### INITIAL PARAMETERS - INTERVAL [a,b] 
 a = 0.
 b = 20.
-N = 1000
+N = 75000
 
 ### POTENTIAL 
 pot = M
@@ -11,11 +11,11 @@ k_el = 1.
 
 # MORSE
 D_e = 50.
-alpha = 0.5       
+alpha = 0.5
 x0 = 2.5
 
 ### WAVE VECTORS
-d = 51
+d = 92
 
 ### COMPUTATION
 task = b

@@ -1,7 +1,8 @@
 MODULE error 
-    !
-    ! performs convergence tests to evaluate computational errors
-    !
+
+!   Performs convergence tests to find collection of input parameters
+!   that maximise the stability of the results.
+
     USE task_a
     USE task_b
     USE potential
@@ -9,59 +10,54 @@ MODULE error
 
         IMPLICIT NONE 
 
-        INTEGER, PARAMETER, PRIVATE:: x_step = 1000, k_step = 1
+        INTEGER, PARAMETER, PRIVATE:: x_step = 1000, k_step = 1, maxit = 2000
 
         CONTAINS
 
         SUBROUTINE ERROR_ANALYSIS(toll, space, percent, max_index)
             IMPLICIT NONE
-            
-            !! INPUT
+
+            ! INPUT
             REAL(KIND=8), INTENT(IN) :: toll
             CHARACTER(len=1), INTENT(IN) :: space 
             INTEGER, INTENT(IN) :: percent, max_index
 
-            !!ROUTINE
+            ! ROUTINE
             INTEGER :: ios, i
             INTEGER :: N, N_default
             REAL(KIND=8) :: L
             INTEGER, ALLOCATABLE :: temp(:,:)
 
-            PRINT*, "DATA ARE PRINTED FOR DEBUGGING..."
-
             IF (space== "X") THEN 
                 PRINT*, "Computing the points of convergence as a function of eigenvalue index in real space."
                 PRINT*, "L is so that V(L)=-",percent,"%De"
-                PRINT*, "Writing data in ""eva_variation_Ltxt""."
+                PRINT*, "Writing data in ""eva_variation_L.txt""."
 
-                OPEN(UNIT=15,file="Output/eva_variation_L.txt")  ! evaluation with "analitical" L 
+                OPEN(UNIT=15,file="Output/eva_variation_L.txt")  
                 DO i = 1, max_index
                     CALL WIDTH_CONVERGENCE(toll,percent,i,N,L,"P","X")
                     IF (N == -1) THEN
-                        PRINT*, "Maximum number of iterations reached! Try to increse the tolerance, De or decrease the maximum&
-                                 &eigenvalue index "
+                        PRINT*, "Maximum number of iterations reached! Consider reducing the tolerance."
                         EXIT 
                     END IF 
                     CALL WIDTH_CONVERGENCE(toll,percent,i,N_default,L,"D","X")
                     IF (N == -1) THEN
-                        PRINT*, "Maximum number of iterations reached! Try to lift up the tolerance..."
+                        PRINT*, "Maximum number of iterations reached! Consider reducing the tolerance."
                         EXIT 
                     END IF 
                     WRITE(15,'(3I7)') i, N, N_default
-                    WRITE(*,'(3I7)') i, N, N_default
                 END DO 
                 CLOSE(15)
-                PRINT*, "computing the points to converge as a function of L in real space."
-        
+                PRINT*, "Computing the points to converge as a function of L in real space."
+                PRINT*, "Writing data in ""eva_variation_L.txt""."
                 OPEN(unit=15,FILE="Output/L_variation_perc.txt")
                     DO i = 1,20
                         CALL WIDTH_CONVERGENCE(toll,i,max_index, N,L,"P","X")
                         IF (N == -1) THEN
-                            PRINT*, "Maximum number of iterations reached! Try to lift up the tolerance..."
+                            PRINT*, "Maximum number of iterations reached! Consider reducing the tolerance."
                             EXIT 
                         END IF 
                         WRITE(15,*) i, L, N    
-                        print*, i, L, N
                     END DO
                 CLOSE(15)
                 RETURN
@@ -70,24 +66,21 @@ MODULE error
                     PRINT*, "Computing the points of convergence as a function of eigenvalue index in reciprocal space."
                     PRINT*, "L is so that V(L)=-",percent,"%De"
 
-                    OPEN(UNIT=15,file="Output/eva_variation_L_K.txt") !evaluation with "analitical" L
+                    OPEN(UNIT=15,file="Output/eva_variation_L_K.txt") 
                     DO i = 1, max_index
                         CALL WIDTH_CONVERGENCE(toll,percent,i,N,L,"P","K")
                         IF (N==-1) THEN 
                             PRINT*, "Convergence test has been stopped."
-                            PRINT*, "Eigenvalue of index",i,"cannot converge!" 
-                            PRINT*, "Consider reducing the tolerance or increasing De."
+                            PRINT*, "Eigenvalue of index",i,"can not converge to the given tolerance."
                             EXIT 
                         END IF 
                         CALL WIDTH_CONVERGENCE(toll,percent,i,N_default,L,"D","K")
                         WRITE(15,'(3I7)') i, N, N_default
                         IF (N==-1) THEN
                             PRINT*, "Convergence test has been stopped."
-                            PRINT*, "Eigenvalue of index",i,"can not converge!" 
-                            PRINT*, "Consider reducing the tolerance or increasing De."
+                            PRINT*, "Eigenvalue of index",i,"can not converge to the given tolerance."
                             EXIT 
                         END IF 
-                        print*, i, N, N_default
                     END DO 
                     CLOSE(15)
 
@@ -99,11 +92,9 @@ MODULE error
                         WRITE(15,*) i, L, N
                         IF (N==-1) THEN 
                             PRINT*, "Convergence test has been stopped."
-                            PRINT*, "L is so that V(L)=-",percent,"%De can not converge!" 
-                            PRINT*, "Consider reducing the tolerance, the eigenvalue index or increasing De."
+                            PRINT*, "L is so that V(L)=-",percent,"%De can not converge  to the given tolerance."
                             EXIT 
                         END IF 
-                        print*, i, L, N
                     END DO 
                     CLOSE(15)
                     RETURN
@@ -118,7 +109,6 @@ MODULE error
                         CALL WIDTH_CONVERGENCE(toll,j,i,N,L,"P","X")
                         temp(i,j) = N
                     END DO 
-                    print*, i 
                 END DO
 
                 OPEN(UNIT=15,file="Output/heat_map.txt", iostat = ios)
@@ -183,12 +173,10 @@ MODULE error
             !! ROUTINE
             REAL(KIND=8) :: eva_1, eva_2
             REAL(KIND=8) :: abs_diff
-            INTEGER :: maxit, counter,  N_points
+            INTEGER :: counter,  N_points
 
             !! OUTPUT
             INTEGER, INTENT(OUT) :: N
-
-            maxit = 200
 
             IF (MANSION == "X") THEN              
                 N_points = x_step
@@ -228,7 +216,7 @@ MODULE error
                     counter = counter + 1
                     
                     IF (counter>=maxit) THEN
-                        PRINT*, "Maximum number of iterations reached! Try to lift up the tolerance..."
+                        PRINT*, "Maximum number of iterations reached! Consider reducing the tolerance."
                         RETURN 
                     END IF 
                     

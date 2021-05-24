@@ -42,7 +42,7 @@ MODULE TASK_A
                         REAL(KIND=8) :: ABSTOL, DLAMCH, WORK(20*N), W(N)       
                         REAL(KIND=8), ALLOCATABLE :: Z(:,:)  ! Eigenvalues and eigenvectors arrays
                         CHARACTER(LEN=15) :: fmt
-                        REAL(KIND=8) :: dx
+                        REAL(KIND=8) :: NORM
 
                         ! OUTPUT
                         REAL(KIND=8), INTENT(OUT), OPTIONAL :: err_eva
@@ -65,11 +65,7 @@ MODULE TASK_A
                                 CALL DSTEVR(JOBZ, RANGE, N, dg, e, VL, VU, IL, IU, ABSTOL, M, &
                                 W, Z, N, ISUPPZ, WORK, 20*N, IWORK, 10*N, INFO)
                                 CALL CPU_TIME(t_end)
-
-                        END IF 
-
-                        dx = x(2) - x(1)
-                        Z(:,:) = Z(:,:) * dx**(-0.5)
+                        END IF
                         
                         IF (INFO==0) THEN
                                 PRINT '(A, I0, A, F15.7, A)', 'Found ', M, ' eigenvalues in', t_end - t_start, ' seconds'
@@ -91,6 +87,15 @@ MODULE TASK_A
                                                         OPEN(UNIT=10, FILE='Output/eigenvectors.txt', ACTION='Write')
                                                           WRITE(10, fmt) (x(i), Z(i,1:M), i=1,N)
                                                         CLOSE(10)
+
+                                                        DO j = 1,3
+                                                                NORM = 0.d0  
+                                                                DO i = 1,N
+                                                                NORM = NORM + ABS(Z(i,j)*Z(i,j))
+                                                                END DO 
+                                                                WRITE(*,'(I2,A24,F20.10)') j,"-th &
+                                                                                & eigenfunction norm:", NORM              
+                                                        END DO 
 
                                                         PRINT *, ''
                                                 ENDIF
