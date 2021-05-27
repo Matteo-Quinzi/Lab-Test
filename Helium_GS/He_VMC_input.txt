@@ -4,7 +4,7 @@ interacting           jastrow               numeric
 
 ## Metropolis parameters 
 steps                 d 
-100000                1.6
+10000                1.6
 
 ##Error analysis parameters
 method                samples
