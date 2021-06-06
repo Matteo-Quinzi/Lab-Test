@@ -2,8 +2,21 @@ from HeVMC import *
 import numpy as np 
 import matplotlib.pyplot as plt
 from time import process_time
+# -------------------------------------------------------------------
+# Code developed by A.Cuoghi, M.Quinzi, G.Rizzi,
+# University of Modena and Reggio Emilia (IT).
+# -------------------------------------------------------------------
+# This python script uses functions and classes developed in the
+# HeVMC.py module in order to evaluate the ground state of the
+# Helium system using a Padé-Jastrow trial wavefunction.
+# The variational parameters describing the ground state are obtained
+# by minimizing the system Energy functional by a VMC implementation.
+# -------------------------------------------------------------------
 
-#Reading data from 
+# -------------------------------------------------------------------
+# INPUT DATA
+# -------------------------------------------------------------------
+# Reading data from 
 input_file = 'He_VMC_input.txt'
 fh = open(input_file,'r')
 data = fh.readlines()
@@ -61,12 +74,15 @@ except:
 
 fh.close()
 
-#Uncomment the next line to set the seed
 np.random.seed(seed)
 
-
+# -------------------------------------------------------------------
+# DIRECT SEARCH
+# -------------------------------------------------------------------
 # A direct section search is implemented to 
-# determine the region of the minimum 
+# determine a reasonable region in which 
+# the minimum of the functional should lie 
+# 
 #
 if b_or_z == 'b': 
     b = np.linspace(param_min, param_max, param_values)
@@ -103,13 +119,17 @@ toc = process_time()
 
 print('Direct search time : %7.5f s' % (toc-tic))
 
-#Averaging quantities to reduce statistical noise 
+# -------------------------------------------------------------------
+# Averaging quantities to reduce statistical noise 
+# -------------------------------------------------------------------
 avg_ds_energies = np.mean(ds_energies, axis=0)
 avg_ds_errors = np.mean(ds_errors, axis=0)
 
-#both informations on energy functional value and associated error are used 
-#to shrink the interval before calling the golden section search method
-#in order to ensure convergence in a reasunable interval
+# -------------------------------------------------------------------
+# both informations on energy functional value and associated error are used 
+# to shrink the interval before calling the golden section search method
+# in order to ensure convergence in a reasonable interval,
+# -------------------------------------------------------------------
 min_indx_en = np.argmin(avg_ds_energies)
 min_indx_err = np.argmin(avg_ds_errors)
 low_bound = min(min_indx_en, min_indx_err)
@@ -122,6 +142,17 @@ if b_or_z == 'b' :
 elif b_or_z == 'z' :
     param_bounds = (Z[low_bound], Z[up_bound])
 
+# -------------------------------------------------------------------
+# GOLDEN SECTION SEARCH
+# -------------------------------------------------------------------
+# A golden seaìction search is implemented to find the value of the minimum
+# within the shrinked interval. As statistical fluctuations lead the 
+# gss to converge to different points, to increase stability the median of these 
+# values is taken to be the representative of the best variational parameter, 
+# minimizing the Energy functional. 
+#
+#
+
 print('Starting Golden Section Search in (%5.4f,%5.4f)' % (param_bounds[0],param_bounds[1]) )
 #Golden section search is called 
 best_param = np.empty(n_gs)
@@ -130,12 +161,12 @@ tic = process_time()
 for i in range(n_gs):
     best_param[i], _ = optimize_He_gss(He, b_or_z, param_bounds,
                                       energy_args = energy_params,
-                                      display = True)
+                                      display = True, tol=tol)
     print('GS run %d completed' % (i+1))
 toc = process_time()
 print('\nGolden section search time : %5.4f s\n' % (toc - tic))
 
-best_param_med = np.median(best_param) #median is less affected then mean by outliers 
+best_param_med = np.median(best_param) #median is less affected then the mean by outliers 
 
 print('Best variational parameter is : %10.7f\n' % best_param_med) 
 
@@ -165,6 +196,11 @@ print('Best value for the Energy functional is ')
 print('E = %5.4f +- %5.4f eV$' % (best_en, best_en_err))
 print('Acceptance Ratio : %5.4f' % ac_ratio)
 
+# -------------------------------------------------------------------
+# OUTPUTS
+# -------------------------------------------------------------------
+# Variational procedure results are saved into a text file
+#
 print("Saving results into 'Output/He_VMC_results.txt' ")
 fh = open('Output/He_VMC_results.txt','w')
 fh.write('Best param : %10.8f\n\n' % best_param_med)
@@ -173,6 +209,9 @@ fh.write('Error on the energy functional : %10.8f\n\n' % best_en_err)
 fh.write('Metropolis Acceptance ratio on last run : %5.4f' % ac_ratio)
 fh.close()
 
+# States sampled within last Metropolis call are saved into a text file
+# with a fixed frequency with respect to the number of steps
+#
 energies = He.EL(r6)
 print("Saving chain steps into 'Output/chain.txt'\n")
 out = open('Output/chain.txt', 'w')
@@ -185,9 +224,12 @@ for i in range(0,len(energies[1:]),freq):
 out.close()
 
 
-#graphics 
+# -------------------------------------------------------------------
+# GRAPHICS (OUTPUTS)
+# -------------------------------------------------------------------
+# Plots describing direct search and golden section searches.
 
-#Direct search plots
+# Direct search plots
 fig, ax = plt.subplots(1,2)
 plt.subplots_adjust(wspace=0.5)
 
@@ -209,7 +251,7 @@ for i in range(n_ds):
 ax[0].plot(params, avg_ds_energies, c='r', marker='.', label='Average values')
 ax[1].plot(params, avg_ds_errors, c='r',marker='.', label='Average values')
 fig.savefig('Output/DS_results.png')
-print("Saving DS plot in 'Outpu/DS_results.png'")
+print("Saving DS plot in 'Output/DS_results.png'")
 
 # Golden section search plots 
 fig2, ax2 = plt.subplots()
@@ -224,15 +266,26 @@ _ = ax2.axhline(y=np.median(best_param), label='param median : %5.4f' % np.media
                 color='r', lw=0.5)
 _ = ax2.legend()
 fig2.savefig('Output/GSS_results.png')
-print("Saving GSS plot in 'Outpu/GSS_results.png'")
+print("Saving GSS plot in 'Output/GSS_results.png'")
 
-#Local Energy histogram
+# -------------------------------------------------------------------
+# Local Energy histogram with the states sampled within the last run is also returned
+# -------------------------------------------------------------------
 fig3, ax3 = plt.subplots()
 _ = ax3.set_title('Local Energy histogram')
 _ = ax3.set_xlabel('EL')
 _ = ax3.set_ylabel(r'$P(E_L)$')
-_ = ax3.hist(energies, bins=200, density=True)
+if steps > 200 :
+    _ = ax3.hist(energies, bins=200, density=True)
+else :
+    _ = ax3.hist(energies, bins=steps, density=True)
 _ = ax3.axvline(x = np.mean(energies), color='r', label = 'Mean energy : %5.4f' % np.mean(energies))
 _ = ax3.legend()
 fig3.savefig('Output/EL_hist.png')
-print("Saving EL histogram in 'Outpu/EL_hist.png'")
+print("Saving EL histogram in 'Output/EL_hist.png'")
+
+# -------------------------------------------------------------------
+# See you soon !
+# Python HeVMC.py module is freely available at 
+# https://github.com/Matteo-Quinzi/Lab-Test/tree/main/Helium_GS
+# -------------------------------------------------------------------

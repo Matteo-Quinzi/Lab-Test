@@ -3,10 +3,25 @@ import numpy.random as rd
 import numpy.linalg as la 
 from scipy.optimize import minimize_scalar
 from time import process_time
-### Metropolis routines 
-#
-#
-#
+
+# -------------------------------------------------------------------
+# Code developed by A. Cuoghi, M. Quinzi, G. Rizzi; 
+# University f Modena and Reggio Emilia (IT).
+# -------------------------------------------------------------------
+# This python module contains functions and classes used for a 
+# Variational Monte Carlo computation of the Helium Ground State.
+
+# -------------------------------------------------------------------
+# METROPOLIS ROUTINES
+# -------------------------------------------------------------------
+# The energy functional of the system is evaluated as the mean value 
+# of a properly defined Local Energy function. System states are 
+# distributed with a weight function defined as 
+# \frac{|\psi(r)|^2}{\int dr psi(r)^* psi(r)}
+# where psi(r) is the trial wavefunction.
+# States are sampled by a metropolis algorithm implementation.
+# -------------------------------------------------------------------
+# 
 def metropolis(steps, init_point, d, weight):
     '''Return a Markov Chain of states evolved through metropolis algorithm.
        
@@ -61,10 +76,12 @@ def metropolis(steps, init_point, d, weight):
     return chain, acceptance_ratio
 #
 #
-#
+# -------------------------------------------------------------------
 # INTERNAL HELIUM CLASS ROUTINES
-# These are listed out of the Helium class for readability 
-# and code maintainability
+# -------------------------------------------------------------------
+# These routines are listed here just for code maintainability. 
+# These are internally used by the Helium class instances, but can also
+# be called for a wider purpose implementation.
 #
 #
 def LaplacianPsiOverPsi(coords,WaveFunction):
@@ -143,6 +160,10 @@ def set_potential_He(interacting):
     if interacting==True : 
         
         def potential_He(coords): 
+            '''Given a 2-dim array of coordinates, containing a state
+            on each row and the correspondent coordinates values on the 
+            column, the function returns the potential evaluated on each state.
+            '''
             n = len(coords)
             m = len(coords[0])
             V = np.empty(n)
@@ -156,6 +177,10 @@ def set_potential_He(interacting):
     else :
         
         def potential_He(coords):
+            '''Given a 2-dim array of coordinates, containing a state
+            on each row and the correspondent coordinates values on the 
+            column, the function returns the potential evaluated on each state.
+            '''
             n = len(coords)
             m = len(coords[0])
             V = np.empty(n)
@@ -251,7 +276,16 @@ def set_local_energy_npj(Z,interacting=True):
     return local_energy
 #
 #
+# -------------------------------------------------------------------
 # STATISTICAL ROUTINES
+# -------------------------------------------------------------------
+# This routines are used to evaluate the average value of the mean 
+# values distribution for a certain observable. In this implementation
+# the mean value is taken to be the best value representing the 
+# functional for a given combination of variational parameters.
+#
+#
+#
 def bootstrap_rep(data, func):
     '''Evaluate a bootstrap replicate for a given function.
        
@@ -300,8 +334,15 @@ def make_stats(chain, pieces, array=False):
         return np.mean(means), np.std(means)
 #
 #
-#
+# -------------------------------------------------------------------
 # ENERGY FUNCTIONAL ROUTINES
+# -------------------------------------------------------------------
+# These routines evaluate the energy functional of the Helium system 
+# with the formerly defined trial wavefunctions.
+# Both a direct search method and a golden section search method are 
+# proposed in order to find the functional minimum.
+#
+#
 def evaluate_energy(weight, EL, p0=np.array([1.,1.,1.,-1.,-1.,-1.]),
                     steps=10000, d=1.25, method='bootstrap',
                     samples=1000, talky=False,
@@ -322,6 +363,8 @@ def evaluate_energy(weight, EL, p0=np.array([1.,1.,1.,-1.,-1.,-1.]),
     virtual displacements in metropolis.
     samples : number of samples for statistical analysis.
     talky (bool) : if True error analysis results are printed.
+    save_chain (bool) : if True the chain of evolved states 
+    is returned as output
     
     Outputs:
     ----------------
@@ -332,6 +375,8 @@ def evaluate_energy(weight, EL, p0=np.array([1.,1.,1.,-1.,-1.,-1.]),
     the mean values distribution, otherwise it is the standard deviation.
     acceptance_ratio (float) : Markov Chain acceptance ratio;
     returned only if err == True.
+    chain (2-dim array) : chain of evolved states, returned 
+    only if save_chain == True.
     '''           
     
     r6 = MarkovChain(init_point=p0, prob_dist = weight, d = d) #Markov Chain instance
@@ -384,7 +429,7 @@ def evaluate_energy(weight, EL, p0=np.array([1.,1.,1.,-1.,-1.,-1.]),
         percs = np.percentile(mean_energies, [2.5,97.5])
         std = np.std(mean_energies)
         
-        # if you feel talkative this prints a lot of infos ;)
+        # prints info if talky == True
         print('Steps : %d' % (r6.steps))
         print('Acceptance ratio   : %7.6f' % r6.acceptance_ratio)
         print('Average Energy     : %10.9f' % best_energy)
@@ -544,8 +589,11 @@ def optimize_He_gss(He, b_or_z, interval,
     best_param = optimize_results.x
     return best_param, optimize_results
 #
-#
+# -------------------------------------------------------------------
 # CLASSES 
+# -------------------------------------------------------------------
+# 
+# MarkovChain
 class MarkovChain:
     '''Class describing a Markov Chain in phase space,
        starting at init_point and with asymptotic probability 
@@ -601,7 +649,9 @@ class MarkovChain:
             self._init_point = self.chain[-1]
         return
 #
-#
+# -------------------------------------------------------------------
+# Helium
+# -------------------------------------------------------------------
 #
 class Helium:
     ''' Class describing a Helium system. 
@@ -704,4 +754,10 @@ class Helium:
         return
 #
 #
-#
+# -------------------------------------------------------------------
+# Thank you for your attention !
+# The code is freely downloadable on the following GitHub repository:
+# https://github.com/Matteo-Quinzi/Lab-Test/tree/main/Helium_GS
+# Hope you good work and see you soon !
+# -------------------------------------------------------------------
+ 
