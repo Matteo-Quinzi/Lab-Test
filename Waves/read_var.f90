@@ -1,6 +1,10 @@
 MODULE READ_VAR
+        ! Declares the initial variables.
+        ! Some of them are read from an external file.
         IMPLICIT NONE
 
+        ! Global values accessible from the other programs:
+        ! constant values and routine parameters
         REAL(KIND=8) :: pi = 4.D0 * DATAN(1.D0)  ! pi
         COMPLEX(KIND=8) :: im = (0.D0, 1.D0)  ! imaginary unit
         INTEGER :: i, save_timestep, IOS
@@ -14,10 +18,12 @@ MODULE READ_VAR
         
         CONTAINS
                 SUBROUTINE READ_DATA()
+                        ! Read values from an external file.
                         IMPLICIT NONE
-                        CHARACTER(20) :: f_data = 'Input/data_sheet.dat'
 
-                        PRINT *, 'Reading values from "', f_data, '"...'
+                        CHARACTER(20) :: f_data = 'Input/data_sheet.dat'  ! file name
+
+                        PRINT *, 'Reading values from "', f_data, '"...'  
                         OPEN(UNIT=10, FILE=f_data, STATUS='OLD', ACTION='READ', IOSTAT=IOS)
                         IF (IOS==0) THEN
                                 READ(10, *) 
