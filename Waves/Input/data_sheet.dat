@@ -1,13 +1,13 @@
 ## INTERVAL [0, L]
-N= 10000                                                     # of points
-L= 90.                    
+N= 10000                                                     number of points
+L= 90.                                                       length of the interval 
 
 ## POTENTIAL
-E_1= 0.                                                    first barrier height
-l_1= 0.                                                    first barrier length
+E_1= 0.                                                      first barrier height
+l_1= 0.                                                      first barrier length
 
 E_2= 1.                                                      second barrier height
-l_2= 60.                                                      second barrier length
+l_2= 60.                                                     second barrier length
 
 ## INITIAL WAVE PACKET
 # load from a file?
@@ -22,6 +22,6 @@ x0= 15.
 k0= 0.
 
 ## TIME PARAMETERS
-M= 100000                                                    # of time steps
-dt= 0.001                                                  timestep length
-save_wave= 200                                              # of waves to save at each run
+M= 100000                                                    total timesteps
+dt= 0.001                                                    timestep length
+save_wave= 200                                               number of waves to save at each run
