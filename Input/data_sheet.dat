@@ -1,7 +1,7 @@
 ### INITIAL PARAMETERS - INTERVAL [a,b] 
 a = 0.
 b = 20.
-N = 75000
+N = 100000
 
 ### POTENTIAL 
 pot = M
@@ -15,12 +15,12 @@ alpha = 0.5
 x0 = 2.5
 
 ### WAVE VECTORS
-d = 92
+d = 100
 
 ### COMPUTATION
-task = b
+task = a
 
-jobz = V
+jobz = N
 range = I
 
 IL = 1

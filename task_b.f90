@@ -97,7 +97,7 @@ MODULE TASK_B
                         REAL(KIND=8) :: W(d), RWORK(7*d)       !    (d), (7*d)
                         COMPLEX(KIND=8):: Z(d,d), WORK(2*d)   !    (d,d), (2*d)
                         CHARACTER(LEN=15) :: fmt
-                        
+
                         !OUTPUT
                         REAL(KIND=8), INTENT(OUT), OPTIONAL :: err_eva
 

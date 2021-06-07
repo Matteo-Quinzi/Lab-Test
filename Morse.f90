@@ -34,10 +34,8 @@ PROGRAM MAIN
         OPEN(UNIT=10, FILE='Output/pot.txt')
           WRITE(10, '(F15.7,F20.10)') (x(i), V(i), i=1,N)
         CLOSE(10)
-
         IF (task == 'a') CALL SOLVE_EIGH_X(x, V, N)   ! computation is performed in real space   
         IF (task == 'b') CALL SOLVE_EIGH_K(x, V, N, d)  ! computation is perfomed in reciprocal space (wave plane basis)
-        
 
         ! ERROR ANALYSIS PARAMETERS
 
@@ -48,6 +46,7 @@ PROGRAM MAIN
         maxPotPerc = 10! Maximum potential percentage: smallest value of L_min used for the computation. 
                         ! L_min satifies the relation: V(L_min) = -De*(maxPotPerc/100)
 
-        CALL ERROR_ANALYSIS(toll,"K",maxPotPerc,maxInd)    
+        !CALL ERROR_ANALYSIS(toll,"K",maxPotPerc,maxInd)    
+        !CALL ERROR_ANALYSIS(toll,"X",maxPotPerc,maxInd)   
                                                
 END PROGRAM

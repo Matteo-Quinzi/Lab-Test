@@ -1,16 +1,16 @@
 program ho_basis
     use eigen  
-    use mirror
+    !use mirror
     !
     implicit none
     !
-    integer, parameter :: N = 5000, M = 25, io_unit=12
+    integer, parameter :: N = 5000, M = 10, io_unit=12
     integer :: i
     real(kind=8), parameter :: L = 15.d0, D_e = 50.d0, alpha = 0.5d0, x_0 = 2.5d0
     real(kind=8) :: x(N), V_morse(N), V_harmonic(N), d_morse(N), e_morse(N-1), d_harmonic(N), e_harmonic(N-1) 
     real(kind=8) :: eigenvals_m(M), eigenvecs_m(N,M), eigenvals_h(M), eigenvecs_h(N,M)
     real(kind=8) :: dx, integral, test_fun(N), V_eff(N), H_ho(M,M)
-    real(kind=8) :: eigenvals_ho(M), summ
+    real(kind=8) :: eigenvals_ho(M)
     dx = L / (N+1) 
     !
     ! defining discretization in x space and potentials
@@ -72,6 +72,11 @@ program ho_basis
     !
     ! Defining V_eff and Hamiltonian in ho space
     V_eff = (/ ( V_morse(i) - V_harmonic(i) , i =1,N )  /)
+    open(io_unit, file="V_eff_potential.txt")
+        do i = 1,N 
+            write(io_unit,*) x(i),V_eff(i)
+        end do 
+    close(io_unit)
     call hamiltonian_ho_space(dx, eigenvals_h, eigenvecs_h, V_eff, H_ho)
     !
     ! Solving Hamiltonian in ho space 
@@ -88,10 +93,4 @@ program ho_basis
     close(io_unit)
     !
     !
-    summ = 0
-    do i = 1, M 
-        summ = summ + H_ho(i,1)*H_ho(i,1)
-    end do 
-    print*, summ
-
 end program ho_basis

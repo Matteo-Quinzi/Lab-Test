@@ -60,7 +60,7 @@ MODULE TASK_A
                                 err_eva = W(1)
                                 RETURN 
                         ELSE 
-                                ALLOCATE(Z(N,IU-IL+1))       
+                                ALLOCATE(Z(N,IU-IL+1))   
                                 CALL CPU_TIME(t_start)
                                 CALL DSTEVR(JOBZ, RANGE, N, dg, e, VL, VU, IL, IU, ABSTOL, M, &
                                 W, Z, N, ISUPPZ, WORK, 20*N, IWORK, 10*N, INFO)

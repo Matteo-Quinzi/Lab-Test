@@ -15,6 +15,9 @@ MODULE error
         CONTAINS
 
         SUBROUTINE ERROR_ANALYSIS(toll, space, percent, max_index)
+            !
+            ! Performs the convergence analysis by calling WIDTH_CONVERGENCE, as a function of L and eigenvalue index.
+            !
             IMPLICIT NONE
 
             ! INPUT
@@ -129,6 +132,10 @@ MODULE error
         
 
         SUBROUTINE WIDTH_CONVERGENCE(toll, percent, index, N, L, mansion, space)
+            !
+            ! Dependence of ERROR_ANALYSIS. Performs the error for either value of L = b or L so that V(L) = -percent/100 D_e
+            !
+
             IMPLICIT NONE 
 
             !! INPUT
@@ -161,14 +168,18 @@ MODULE error
         END SUBROUTINE WIDTH_CONVERGENCE
 
 
-        SUBROUTINE N_d_CONV(toll, L, index, N, mansion)
+        SUBROUTINE N_d_CONV(toll, L, index, N, space)
+            !
+            !  Performs the iteration to reach convergence condition in either real or reciprocal space.
+            !
+
             IMPLICIT NONE 
 
             !! INPUT
             REAL(KIND=8), INTENT(IN) :: toll
             INTEGER, INTENT(IN) :: index
             REAL(KIND=8), INTENT(IN) :: L
-            CHARACTER (LEN=1) :: mansion
+            CHARACTER (LEN=1) :: space
 
             !! ROUTINE
             REAL(KIND=8) :: eva_1, eva_2
@@ -178,7 +189,7 @@ MODULE error
             !! OUTPUT
             INTEGER, INTENT(OUT) :: N
 
-            IF (MANSION == "X") THEN              
+            IF (space == "X") THEN              
                 N_points = x_step
                 
                 IF (N_points<=INDEX) THEN 
@@ -205,7 +216,7 @@ MODULE error
                 N = N_points
                 RETURN
 
-            ELSEIF (MANSION == "K") THEN 
+            ELSEIF (space == "K") THEN 
                 N_points = 1000
                 d = 50
 
@@ -242,6 +253,9 @@ MODULE error
 
 
         FUNCTION SINGLE_EVA (N, L, index, space, d) RESULT(w_1)
+            !
+            ! Compute a single eigevaluee of the requested index by calling either SOLVE_EIGH_X or SOLVE_EIGH_K
+            !
             IMPLICIT NONE 
 
             !! INPUT 

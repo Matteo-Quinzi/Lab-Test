@@ -5,7 +5,7 @@ MODULE eigen
     ! and solve the eigenvalues problem.
     !
     IMPLICIT NONE
-    INTEGER, PRIVATE :: i, j             ! loop variables
+    INTEGER, PRIVATE :: i,j             ! loop variables
     REAL(KIND=8), PRIVATE :: h = 1.d0    ! distance between two successive 
                                          ! coordinates values
     SAVE
@@ -123,6 +123,158 @@ MODULE eigen
             e(i) = - 1/(2.d0 * h**2.d0) 
         END DO
     END SUBROUTINE Hamiltonian_x
+    !
+    !
+    !
+    subroutine print_matrix(M, N)
+        !diagnostic subroutine
+        !print NxN matrix in a nice format
+        complex(kind=8), dimension(:,:), intent(in) :: M 
+        integer, intent(in) :: N 
+        integer :: i
+        do i = 1,N
+                write(*,*) M(i,:) 
+        end do
+    end subroutine
+    !
+    !
+    !
+    subroutine rebuild_wave(x, k, A_k, f)
+        ! The aim of this routine is to rebuild the eigenstates in
+        ! x_space to compare them with the eigenstates directly built in
+        ! that space
+        !
+        ! Arguments:
+        !------------
+        ! x(double) (dimension N) : array of coordinates
+        ! k(double) (dimension N_k) : array of wavevectors, determining which waves to use
+        ! A_k(complex) (dimension N_k) : array of the waves coefficients
+        !
+        ! Output:
+        ! --------
+        ! f(complex) (dimension N) : array with the rebuilt function in x space
+        real(kind=8), dimension(:), intent(in) :: x, k
+        complex(kind=8), dimension(:), intent(in) :: A_k 
+        complex(kind=8), dimension(:), intent(out) :: f 
+        complex(kind=8), dimension(:,:), allocatable :: T ! auxiliary matrix 
+        integer :: N, N_k, i, j
+        N = size(x)
+        N_k = size(k)
+        allocate( T(N_k, N) )
+        ! Building up a matrix which has a plane wave on each row 
+        ! weighted by the coefficient A_k
+        do i = 1, N_k
+            T(i,:) = (/ ( A_k(i) * zexp(-complex(0.d0,k(i)*x(j))) , j=1,N ) /)
+        end do
+        !
+        ! Summing up all the waves pointwise
+        f = (/ (sum(T(:,i)) , i=1,N) /)
+    end subroutine
+    !
+    !
+    !
+    subroutine absolute_square(V, A)
+        ! Given an array with complex entries, the 
+        ! routine builds up an array with the absolute square 
+        ! of each entry
+        complex(kind=8), dimension(:), intent(in) :: V
+        real(kind=8), dimension(:), intent(out) :: A 
+        integer :: N 
+        N = size(V)
+        A = (/ (real(V(i))**2.d0 + aimag(V(i))**2.d0 , i=1,N)   /)
+    end subroutine absolute_square
+    !
+    !
+    !
+    subroutine m_to_h(x, x_0, D_e, alpha, h_potential)
+        ! Given a Morse potential defines the harmonic potential 
+        ! obtained by Taylor expanding near the energy minimum
+        real(kind=8), dimension(:), intent(in) :: x
+        real(kind=8), intent(in) :: x_0, D_e, alpha ! Morse potential parameters
+        real(kind=8), dimension(:), intent(out) :: h_potential
+        real(kind=8) :: mw2 ! harmonic constant 
+        integer :: N 
+        N = size(h_potential)
+        mw2 = D_e * alpha ** 2.d0 
+        h_potential = (/ (mw2 * (x(i) - x_0)**2.d0 - D_e , i=1,N )/)
+    end subroutine m_to_h
+    !
+    !
+    !
+    subroutine quadrature_1d(dx, f, integral)
+        ! Perform quadrature in 1d using trapezoidal formula
+        real(kind=8), dimension(:), intent(in) :: f(:)
+        real(kind=8), intent(in) :: dx
+        real(kind=8), intent(out) :: integral 
+        integer :: N 
+        N = size(f)
+        integral = 0.5 * (f(1) + f(N)) 
+        do i = 2,N-1
+            integral = integral + f(i)
+        end do
+        integral = dx*integral
+    end subroutine
+    !
+    !
+    !
+    subroutine hamiltonian_ho_space(dx, eigenvalues, eigenstates, V_eff, H)
+        ! Defines the hamiltonian on a subset of the eigenstates of the
+        ! harmonic oscillator
+        !integer :: M ! number of base states
+        real(kind=8), intent(in) :: dx 
+        real(kind=8), dimension(:,:), intent(in) :: eigenstates
+        real(kind=8), dimension(:), intent(in) :: V_eff, eigenvalues
+        real(kind=8), dimension(:,:), intent(out) :: H 
+        integer :: M, N, i, j, k 
+        real(kind=8), dimension(:), allocatable :: temp_intg ! temporary array for integration 
+        M = size(eigenstates(1,:))
+        N = size(eigenstates(:,1))
+        allocate(temp_intg(N))
+        do i = 1,M
+            do j=i,M
+                ! define integral as <i| V_eff |j>
+                temp_intg = (/ ( eigenstates(k,i) * V_eff(k) * eigenstates(k,j) , k=1,N)   /)
+                call quadrature_1d(dx, temp_intg, H(i,j))
+            end do 
+        end do
+        !
+        ! adding values on the diagonal
+        do i = 1,M
+            H(i,i) = H(i,i) + eigenvalues(i)
+        end do
+    end subroutine hamiltonian_ho_space
+    !
+    !
+    !
+    subroutine solve_hamiltonian_real(H, eigenvalues)
+        ! Solve eigenvalues problem for a real hamiltonian
+        real(kind=8), dimension(:,:), intent(inout) :: H 
+        real(kind=8), dimension(:), intent(out) :: eigenvalues 
+        integer :: N 
+        !
+        ! internal dsyev variables 
+        character(1) :: jobz='v', uplo='u'
+        integer :: lda 
+        real(kind=8), dimension(:), allocatable :: work 
+        integer :: lwork, info 
+        N = size(H(:,1))
+        lda = max(1,N) + 1 
+        lwork = max(1, 3*N - 1) + 1 
+        allocate(work(lwork))
+        ! 
+        ! calling dsyev 
+        call dsyev(jobz, uplo, N, H, N, eigenvalues, work, lwork, info)
+        !
+        !
+        ! diagnostic printout 
+        if (info == 0) then 
+            write(*,*) 'Subroutine dsyev : successful computation !'
+        else if (info < 0 ) then 
+            write(*,*) 'Subroutine dsyev : element i = ', -info, ' had an illegal value |:('
+        else 
+            write(*,*) 'Subroutine dsyev : algorithm failed to converge :( '
+        end if 
+    end subroutine solve_hamiltonian_real
     !
     !
     !
