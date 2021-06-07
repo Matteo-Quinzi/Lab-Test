@@ -18,9 +18,9 @@ x0 = 2.5
 d = 100
 
 ### COMPUTATION
-task = a
+task = b
 
-jobz = N
+jobz = V
 range = I
 
 IL = 1
