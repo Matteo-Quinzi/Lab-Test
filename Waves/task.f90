@@ -57,10 +57,10 @@ MODULE TASK
                         ! ROUTINE
                         INTEGER(KIND=8) :: plan
 
-                        IF (DIR == 'F') THEN
+                        IF (DIR == 'F') THEN   ! forward 
                                 CALL DFFTW_PLAN_DFT_1D(plan, N, PHI, FFT, FFTW_FORWARD, FFTW_ESTIMATE)
 
-                        ELSEIF (DIR == 'B') THEN
+                        ELSEIF (DIR == 'B') THEN   ! backward
                                 CALL DFFTW_PLAN_DFT_1D(plan, N, PHI, FFT, FFTW_BACKWARD, FFTW_ESTIMATE)
 
                         ENDIF
