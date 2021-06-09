@@ -9,9 +9,7 @@ PROGRAM MAIN
         USE TASK   ! TASK module contains the functions used to perform the calculus.
      
         IMPLICIT NONE
-
-        INTEGER :: l2, l1   ! barriers semilengths converted in array points unit
-        
+ 
         ! Array declarations:
         REAL(KIND=8), ALLOCATABLE :: x(:), V(:), k(:), PHI_EVOL(:,:), PHI_SQMOD(:)   
         COMPLEX(KIND=8), ALLOCATABLE :: V_OP(:), K_OP(:), PHI_X(:), PHI_K(:)
@@ -36,10 +34,7 @@ PROGRAM MAIN
         V = POT()   ! potential energy array
         
         V_OP(:) = EXP(-im * V(:) * dt / 2.D0)   ! potential time evolution operator
-        
-        l1 = INT(N * l_1 / (2 * L))   ! semilength of the first barrier in array points unit
-        l2 = INT(N * l_2 / (2 * L)) 
- 
+       
         PHI_X = PHI(x)   ! initial wavepacket
 
         ! Time evolution array: each column contains the wavepacket computed at a certain time instant.

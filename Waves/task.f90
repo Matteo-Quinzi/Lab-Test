@@ -9,12 +9,6 @@ MODULE TASK
                         ! OUTPUT
                         REAL(KIND=8) :: POT(N)   ! potential energy array
 
-                        ! ROUTINE
-                        INTEGER(KIND=8) :: l1, l2   ! barriers widths
-                        
-                        l1 = INT(N * l_1 / (2 * L))   ! semilentgh of the first barrier in array points unit
-                        l2 = INT(N * l_2 / (2 * L))
-
                         ! The potential energy is everywhere zero except for two regions where it has a constant values of E_1 and E_2.
                         POT(:) = 0.D0   
                         POT(  N/2 - l1 :   N/2 + l1) = E_1   ! first barrier
