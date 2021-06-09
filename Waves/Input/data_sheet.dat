@@ -1,13 +1,13 @@
 ## INTERVAL [0, L]
-N= 10000                                                     number of points
-L= 90.                                                       length of the interval 
+N= 100                                                     number of points
+L= 100.                                                       length of the interval 
 
 ## POTENTIAL
-E_1= 0.                                                      first barrier height
-l_1= 0.                                                      first barrier length
+E_1= 1.                                                      first barrier height
+l_1= 0.5                                                      first barrier length
 
 E_2= 1.                                                      second barrier height
-l_2= 60.                                                     second barrier length
+l_2= 0.2                                                     second barrier length
 
 ## INITIAL WAVE PACKET
 # load from a file?
@@ -17,11 +17,11 @@ load_f_inp= F
 f_inp= Output/final_wave.txt
 
 # if F(alse) -> Gaussian packet
-sigma= 0.5
+sigma= 2.
 x0= 15.
 k0= 0.
 
 ## TIME PARAMETERS
-M= 100000                                                    total timesteps
+M= 5000                                                    total timesteps
 dt= 0.001                                                    timestep length
-save_wave= 200                                               number of waves to save at each run
+save_wave= 100                                               number of waves to save at each run
