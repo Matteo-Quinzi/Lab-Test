@@ -121,26 +121,31 @@ PROGRAM MAIN
                         PRINT *, 'Saving evolution parameters and computed coefficients in "', f_coef, '"...'
                         OPEN(UNIT=10, FILE=f_coef, POSITION='APPEND')
                          ! parameters of the simulation
-                         WRITE(10, '("L=", F20.10)') L
+                         WRITE(10, '("L=", F20.10, ", N=", I10)') L, N
                          WRITE(10, '("E1=", F20.10, ", l1=", F20.10, ", E2=", F20.10, ", l2=", F20.10)') E_1, l_1, E_2, l_2
                          WRITE(10, '("s=", F20.10, ", x0=", F20.10, ", k0=", F20.10)') sigma, x0, k0
                          WRITE(10, '("M=", I10, ", dt=", F20.10)') M, dt
                          WRITE(10, *) 
                          
                          ! reflection coefficient: wavepacket norm before the first barrier
-                         WRITE(10, '(A, F15.10, A)') 'R  = ', SUM(PHI_EVOL(: N/2-l1, save_wave+1)) * (x(2)-x(1)) * 100.D0, ' %'  
+                         WRITE(10, '(A, F15.10, A)') 'R  = ', &
+                                 SUM(PHI_EVOL(: N/2-l1, save_wave+1)) * (x(2)-x(1)) * 100.D0, ' %'  
                          
                          ! first barrier absorption coefficient: wavepacket norm inside the first barrier
-                         WRITE(10, '(A, F15.10, A)') 'A1 = ', SUM(PHI_EVOL(N/2-l1 : N/2+l1, save_wave+1)) * (x(2)-x(1)) * 100.D0, ' %'
+                         WRITE(10, '(A, F15.10, A)') 'A1 = ', &
+                                 SUM(PHI_EVOL(N/2-l1 : N/2+l1, save_wave+1)) * (x(2)-x(1)) * 100.D0, ' %'
                          
                          ! wavepacket norm between the two barriers
-                         WRITE(10, '(A, F15.10, A)') 'A12= ', SUM(PHI_EVOL(N/2+l1 : 2*N/3-l2, save_wave+1)) * (x(2)-x(1)) * 100.D0, ' %'
+                         WRITE(10, '(A, F15.10, A)') 'A12= ', & 
+                                 SUM(PHI_EVOL(N/2+l1 : 2*N/3-l2, save_wave+1)) * (x(2)-x(1)) * 100.D0, ' %'
                          
                          ! second barrier absorption coefficient: wavepacket norm inside the second barrier
-                         WRITE(10, '(A, F15.10, A)') 'A2 = ', SUM(PHI_EVOL(2*N/3-l2 : 2*N/3+l2, save_wave+1)) * (x(2)-x(1)) * 100.D0, ' %'
+                         WRITE(10, '(A, F15.10, A)') 'A2 = ', &
+                                 SUM(PHI_EVOL(2*N/3-l2 : 2*N/3+l2, save_wave+1)) * (x(2)-x(1)) * 100.D0, ' %'
                          
                          ! transmission coefficient: wavepacket norm after the second barrier
-                         WRITE(10, '(A, F15.10, A)') 'T  = ', SUM(PHI_EVOL(2*N/3+l2 : , save_wave+1)) * (x(2)-x(1)) * 100.D0, ' %'
+                         WRITE(10, '(A, F15.10, A)') 'T  = ', &
+                                 SUM(PHI_EVOL(2*N/3+l2 : , save_wave+1)) * (x(2)-x(1)) * 100.D0, ' %'
                          
                          ! initial and final norm
                          WRITE(10, *)
