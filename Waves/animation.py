@@ -10,10 +10,14 @@ x = V_f[:,0]   # spatial interval
 L = np.max(x)
 V = V_f[:,1]   # potential
 V0 = np.max(V)
-V[:] = V[:] / V0 * 1.1 * np.max(wave_func[:,0])   # graphical purposes
+if V0 != 0:
+    V[:] = V[:] / V0 * 1.1 * np.max(wave_func[:,0])   # graphical purposes
+    ylim = np.max(V) * 1.1
+else:
+    ylim = np.max(wave_func[:,0]) * 1.1
 
 fig = plt.figure()
-ax = plt.axes(xlim=(0,L), ylim=(0.,np.max(V)*1.1))
+ax = plt.axes(xlim=(0,L), ylim=(0., ylim))
 
 ax.set_xlabel('x', fontsize='large')
 ax.set_ylabel(r'$|\psi|^2$', fontsize='large')
